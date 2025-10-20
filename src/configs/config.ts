@@ -38,19 +38,31 @@ export const siteConfig = {
   ],
   projects: [
     {
+      title: "TaskCollab",
+      description:
+        "A collaborative task management platform enabling individuals and teams to create, assign, and track tasks in real time. Built with a scalable Node.js + Prisma backend and a modern Next.js front-end with ShadCN components, featuring AI assistance, analytics, and role-based access control.",
+      link: "https://taskcollab.vercel.app",
+      skills: [
+        "Next.js",
+        "Node.js",
+        "TypeScript",
+        "Prisma",
+        "PostgreSQL",
+        "Redis",
+        "BullMQ",
+        "Docker",
+        "ShadCN/UI",
+        "TailwindCSS",
+      ],
+    },
+    {
       name: "AI Dev Roundup Newsletter",
       description:
         "One concise email. Five minutes. Every Tuesday. Essential AI news & trends, production-ready libraries, powerful AI tools, and real-world code examples",
       link: "https://aidevroundup.com/?ref=devportfolio",
       skills: ["React", "Node.js", "AWS"],
     },
-    {
-      name: "Chrome Extension Mastery",
-      description:
-        "Master the art of building production-ready, full-stack Chrome Extensions using modern web technologies and best practices",
-      link: "https://fullstackextensions.com/?ref=devportfolio",
-      skills: ["React", "Node.js", "AWS"],
-    },
+
     {
       name: "ExtensionKit",
       description:
