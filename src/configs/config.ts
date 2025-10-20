@@ -38,7 +38,7 @@ export const siteConfig = {
   ],
   projects: [
     {
-      title: "TaskCollab",
+      name: "TaskCollab",
       description:
         "A collaborative task management platform enabling individuals and teams to create, assign, and track tasks in real time. Built with a scalable Node.js + Prisma backend and a modern Next.js front-end with ShadCN components, featuring AI assistance, analytics, and role-based access control.",
       link: "https://taskcollab-app.vercel.app/",
