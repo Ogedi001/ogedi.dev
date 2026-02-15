@@ -1,0 +1,120 @@
+---
+title: "Caching Strategies for Next.js Applications"
+description: "Comprehensive guide to implementing effective caching in Next.js for optimal performance"
+date: "2024-11-01"
+tags: ["Next.js", "Caching", "Performance", "Redis"]
+readingTime: "7 min read"
+---
+
+# Caching Strategies for Next.js Applications
+
+Caching is crucial for building fast Next.js applications. Here's a comprehensive guide to caching strategies.
+
+## Types of Caching in Next.js
+
+### 1. Data Cache
+
+Next.js automatically caches data fetches:
+
+```typescript
+// This request is cached by default
+async function getPosts() {
+  const res = await fetch("https://api.example.com/posts");
+  return res.json();
+}
+
+// For dynamic data, use:
+fetch("https://api.example.com/posts", { cache: "no-store" });
+```
+
+### 2. Full Route Cache (Static Generation)
+
+Pages are statically generated and cached:
+
+```typescript
+// This page is generated at build time
+export async function generateStaticParams() {
+  const posts = await getPosts();
+  return posts.map((post) => ({ slug: post.slug }));
+}
+```
+
+### 3. Request Memoization
+
+React automatically memoizes fetches within the same render:
+
+```typescript
+function PostList() {
+  // This fetch is memoized within the request
+  const posts = await getPosts();
+  const morePosts = await getPosts(); // Uses cached result
+
+  return <PostList posts={posts} />;
+}
+```
+
+## Custom Caching with Redis
+
+### Cache-Aside Pattern
+
+```typescript
+import Redis from "ioredis";
+
+const redis = new Redis(process.env.REDIS_URL);
+
+export async function getCachedData(key: string) {
+  const cached = await redis.get(key);
+  if (cached) {
+    return JSON.parse(cached);
+  }
+  return null;
+}
+
+export async function setCachedData(key: string, data: any, ttl = 3600) {
+  await redis.setex(key, ttl, JSON.stringify(data));
+}
+
+export async function getPosts() {
+  const cacheKey = "posts:all";
+
+  // Check cache
+  const cached = await getCachedData(cacheKey);
+  if (cached) return cached;
+
+  // Fetch from API
+  const posts = await fetchPosts();
+
+  // Store in cache (1 hour)
+  await setCachedData(cacheKey, posts, 3600);
+
+  return posts;
+}
+```
+
+### Incremental Static Regeneration (ISR)
+
+```typescript
+export async function generateStaticParams() {
+  const posts = await getPosts();
+  return posts.map((post) => ({ slug: post.slug }));
+}
+
+export default async function PostPage({ params }: { params: { slug: string } }) {
+  const post = await getPostBySlug(params.slug);
+  return <Post post={post} />;
+}
+
+export const revalidate = 60; // Revalidate every 60 seconds
+```
+
+## Best Practices
+
+1. **Cache at the right level** - Data, route, or CDN
+2. **Use appropriate TTLs** - Balance freshness with performance
+3. **Implement cache invalidation** - When data changes
+4. **Monitor cache hit rates** - Track effectiveness
+5. **Use stale-while-revalidate** - For better UX
+
+## Conclusion
+
+Effective caching is essential for Next.js performance. Use the built-in caching mechanisms and supplement with Redis for custom caching needs.

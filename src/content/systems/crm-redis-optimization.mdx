@@ -1,0 +1,169 @@
+---
+title: "CRM Redis Optimization at Outcess"
+description: "How I reduced API latency by 60% using Redis caching strategies for a large-scale CRM platform"
+date: "2022-06-01"
+tags: ["Redis", "Node.js", "API Optimization", "Caching", "Performance", "CRM"]
+metrics:
+  - label: "API Latency Reduced"
+    value: "60%"
+    description: "From 250ms to under 100ms average response time"
+  - label: "Cache Hit Rate"
+    value: "92%"
+    description: "Achieved through intelligent cache invalidation"
+  - label: "Database Load"
+    value: "-70%"
+    description: "Reduced database query load during peak hours"
+---
+
+# CRM Redis Optimization at Outcess
+
+As a Backend Developer at Outcess Solution Nigeria Ltd, I led the optimization of a large CRM platform's API, dramatically improving performance through strategic Redis implementation.
+
+## The Challenge
+
+The CRM platform served thousands of concurrent users with:
+
+- **250ms+ average API latency** during peak hours
+- **Heavy database load** from repeated queries
+- **Poor user experience** due to slow data retrieval
+- **High infrastructure costs** from database scaling
+
+## Solution Architecture
+
+### Cache-Aside Pattern Implementation
+
+```typescript
+// Redis client setup
+const redis = new Redis({
+  host: process.env.REDIS_HOST,
+  port: Number(process.env.REDIS_PORT),
+  password: process.env.REDIS_PASSWORD,
+  maxRetriesPerRequest: 3,
+  retryDelayOnFailover: 100,
+});
+
+// Generic cache-aside implementation
+async function cacheAside<T>(
+  key: string,
+  fetchFn: () => Promise<T>,
+  ttl: number = 3600,
+): Promise<T> {
+  // 1. Check cache
+  const cached = await redis.get(key);
+  if (cached) {
+    return JSON.parse(cached);
+  }
+
+  // 2. Fetch from database
+  const data = await fetchFn();
+
+  // 3. Store in cache
+  await redis.setex(key, ttl, JSON.stringify(data));
+
+  return data;
+}
+```
+
+### Multi-Layer Caching Strategy
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                     API Request                              │
+└─────────────────────────┬───────────────────────────────────┘
+                          │
+                          ▼
+┌─────────────────────────────────────────────────────────────┐
+│                   L1: Local Cache (Memory)                   │
+│                   │  - User sessions                          │
+│                   │  - Frequently accessed config            │
+└───────────────────┼─────────────────────────────────────────┘
+                    │ MISS
+                    ▼
+┌─────────────────────────────────────────────────────────────┐
+│                   L2: Redis Cache                            │
+│                   │  - User profiles                          │
+│                   │  - Dashboard data                         │
+│                   │  - Search results                         │
+└───────────────────┼─────────────────────────────────────────┘
+                    │ MISS
+                    ▼
+┌─────────────────────────────────────────────────────────────┐
+│                   L3: PostgreSQL Database                     │
+└─────────────────────────────────────────────────────────────┘
+```
+
+### Cache Invalidation Strategy
+
+```typescript
+// Event-driven cache invalidation
+class CacheInvalidator {
+  async invalidateUserCache(userId: string) {
+    const keys = [
+      `user:${userId}`,
+      `user:${userId}:profile`,
+      `user:${userId}:dashboard`,
+      `users:list:*`, // Pattern-based invalidation
+    ];
+
+    await redis.del(...keys);
+
+    // Publish invalidation event for distributed systems
+    await redis.publish(
+      "cache:invalidate",
+      JSON.stringify({
+        userId,
+        invalidatedAt: new Date().toISOString(),
+      }),
+    );
+  }
+
+  async invalidatePattern(pattern: string) {
+    const keys = await redis.keys(pattern);
+    if (keys.length > 0) {
+      await redis.del(...keys);
+    }
+  }
+}
+```
+
+### Query Result Caching
+
+```typescript
+// Dashboard data caching
+async function getDashboardData(userId: string) {
+  const cacheKey = `dashboard:${userId}`;
+
+  return cacheAside(
+    cacheKey,
+    async () => {
+      const [metrics, recentActivities, pendingTasks, teamStats] =
+        await Promise.all([
+          getUserMetrics(userId),
+          getRecentActivities(userId),
+          getPendingTasks(userId),
+          getTeamStats(userId),
+        ]);
+
+      return { metrics, recentActivities, pendingTasks, teamStats };
+    },
+    300,
+  ); // 5-minute TTL for dashboard
+}
+```
+
+## Results
+
+| Metric              | Before    | After   | Improvement    |
+| ------------------- | --------- | ------- | -------------- |
+| Average API Latency | 250ms     | <100ms  | 60% reduction  |
+| Cache Hit Rate      | 0%        | 92%     | New capability |
+| Database Load       | 100%      | 30%     | 70% reduction  |
+| Peak Hour Costs     | $2,500/mo | $800/mo | 68% savings    |
+
+## Key Learnings
+
+1. **Cache invalidation is hard**: Use event-driven patterns for consistency
+2. **Not all data should be cached**: Hot vs cold data classification
+3. **TTL tuning matters**: Balance freshness with performance
+4. **Monitor cache health**: Track hit rates and adjust strategies
+5. **Graceful degradation**: Always have fallback to database

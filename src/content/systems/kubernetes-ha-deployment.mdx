@@ -1,0 +1,145 @@
+---
+title: "Kubernetes HA Deployment at Airepro"
+description: "Containerized backend services and deployed across Kubernetes clusters for improved reliability and scalability"
+date: "2023-07-01"
+tags: ["Kubernetes", "Docker", "Azure", "DevOps", "HA"]
+metrics:
+  - label: "System Uptime"
+    value: "99.9%"
+    description: "High availability achieved"
+  - label: "Debugging Cycles"
+    value: "~40%"
+    description: "Faster issue resolution with centralized logging"
+---
+
+# Kubernetes HA Deployment at Airepro
+
+As a Backend Engineer at Airepro Solution Pvt Ltd, I containerized backend services and deployed them across Kubernetes clusters for improved reliability and scalability.
+
+## The Challenge
+
+The existing infrastructure had:
+
+- Manual deployment processes
+- No auto-scaling capabilities
+- Single points of failure
+- Limited observability
+
+## Solution: Kubernetes + Docker
+
+### 1. Containerization with Docker
+
+Created Dockerfiles for all backend services:
+
+```dockerfile
+FROM node:20-alpine
+
+WORKDIR /app
+
+COPY package*.json ./
+RUN npm ci --only=production
+
+COPY . .
+
+EXPOSE 3000
+
+CMD ["node", "dist/server.js"]
+```
+
+### 2. Kubernetes Deployment Configuration
+
+```yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: backend-api
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: backend-api
+  template:
+    metadata:
+      labels:
+        app: backend-api
+    spec:
+      containers:
+        - name: backend-api
+          image: airepro/backend-api:latest
+          ports:
+            - containerPort: 3000
+          resources:
+            requests:
+              memory: "256Mi"
+              cpu: "250m"
+            limits:
+              memory: "512Mi"
+              cpu: "500m"
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 3000
+            initialDelaySeconds: 30
+            periodSeconds: 10
+```
+
+### 3. NGINX Load Balancing
+
+Configured NGINX Ingress for traffic distribution:
+
+```yaml
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: backend-ingress
+  annotations:
+    nginx.ingress.kubernetes.io/rate-limit: "100"
+spec:
+  rules:
+    - host: api.airepro.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: backend-api
+                port:
+                  number: 80
+```
+
+### 4. Centralized Logging with ELK Stack
+
+Set up Elasticsearch, Grafana, and Loki:
+
+```yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: fluentd-config
+data:
+  fluent.conf: |
+    <source>
+      @type tail
+      path /var/log/app/*.log
+      pos_file /var/log/app/log.pos
+      tag app.*
+    </source>
+    <match app.**>
+      @type loki
+      url http://loki:3100
+    </match>
+```
+
+## Results
+
+- **99.9% uptime** achieved through HA deployment
+- **40% reduction in debugging cycles** with centralized logging
+- **Auto-scaling** based on CPU/memory metrics
+- **Zero-downtime deployments** with rolling updates
+
+## Key Takeaways
+
+1. **Kubernetes provides excellent HA** - Self-healing and auto-scaling
+2. **Observability is critical** - Centralized logging speeds up debugging
+3. **Infrastructure as Code** - All configs version-controlled

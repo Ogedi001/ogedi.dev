@@ -1,0 +1,82 @@
+---
+title: "Building API v0.2.4 at Chimoney"
+description: "How I designed and released a cleaner API with improved service boundaries, reducing debugging time by ~30%"
+date: "2024-08-01"
+tags: ["Node.js", "TypeScript", "REST API", "Architecture", "Microservices"]
+metrics:
+  - label: "Debugging Time Reduced"
+    value: "~30%"
+    description: "Faster issue identification and resolution"
+  - label: "Build Pipeline Speed"
+    value: "Improved"
+    description: "Faster CI/CD builds and deployments"
+---
+
+# Building API v0.2.4 at Chimoney
+
+As a Full-Stack Engineer at Chimoney (a Techstars '23 company), I led the design and release of API v0.2.4, introducing cleaner service boundaries and architecture improvements.
+
+## The Challenge
+
+The previous API version had:
+- Tightly coupled services
+- Unclear responsibility boundaries
+- Slow debugging cycles
+- Complex dependency graphs
+
+## Solution Architecture
+
+### 1. Service Boundary Refactoring
+
+I redesigned the API to have clear, well-defined service boundaries:
+
+```typescript
+// Before: Monolithic service
+class PaymentService {
+  async processPayment() { /* ... */ }
+  async sendNotification() { /* ... */ }
+  async updateLedger() { /* ... */ }
+}
+
+// After: Separated concerns
+class PaymentService {
+  async processPayment() { /* ... */ }
+}
+
+class NotificationService {
+  async sendNotification() { /* ... */ }
+}
+
+class LedgerService {
+  async updateLedger() { /* ... */ }
+}
+```
+
+### 2. Error Handling Standardization
+
+Implemented consistent error handling across all services:
+
+```typescript
+class AppError extends Error {
+  constructor(
+    public statusCode: number,
+    public code: string,
+    message: string,
+    public isOperational = true
+  ) {
+    super(message);
+  }
+}
+```
+
+## Results
+
+- **30% reduction in debugging time** - Clearer error traces and service boundaries
+- **Improved build pipeline speed** - Modular architecture enabled parallel builds
+- **Better developer experience** - Self-documenting APIs with clear contracts
+
+## Key Takeaways
+
+1. **Separation of concerns** is critical for maintainable APIs
+2. **Consistent error handling** dramatically improves debuggability
+3. **Clear service boundaries** enable better team ownership

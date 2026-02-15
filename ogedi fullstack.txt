@@ -1,0 +1,106 @@
+OGEDI FAVOUR UCHIBEKE
+Full-Stack Software Engineer Remote (Nigeria)  .Open to Global Remote Roles
+📧 ogedifavour2@gmail.com · 🔗 LinkedIn · 💻 GitHub · 🌐 Portfolio
+________________
+
+
+**SUMMARY
+Full-Stack Software Engineer with 4+ years of experience building scalable, high-performance web and backend systems used by distributed teams across Canada, India, and Nigeria. Strong expertise in Node.js, TypeScript, React/Next.js, and cloud-native backend architectures. Proven ability to improve system performance, reduce operational overhead, and deliver reliable production systems using Docker, Kubernetes, AWS/Azure, and modern DevOps practices. Comfortable owning features end-to-end—from system design and API development to deployment, monitoring, and optimization.
+________________
+
+
+CORE TECHNICAL SKILLS
+Frontend
+* React, Next.js, TypeScript, TailwindCSS
+Backend & API Development
+* Node.js, Fastify, Express.js, NestJS
+* RESTful APIs, GraphQL
+* WebSockets & real-time systems
+* Authentication & Authorization (JWT, RBAC)
+Databases, Caching & Search
+* PostgreSQL, MySQL
+* MongoDB
+* Redis (caching, queues)
+* Elasticsearch, Firebase
+
+
+Cloud, DevOps & Infrastructure
+   * AWS, Azure
+   * Docker, Kubernetes
+   * NGINX (reverse proxy, load balancing)
+   * CI/CD (GitHub Actions)
+Observability & Reliability
+   * Prometheus, Grafana, Loki
+   * Centralized logging & metrics
+   * Performance monitoring & optimization
+Testing & Tooling
+   * Jest, Mocha
+   * API & integration testing
+   * Background jobs & queues (BullMQ)
+
+
+________________
+
+
+PROFESSIONAL EXPERIENCE
+Full-Stack Engineer — Chimoney (Techstars ’23)
+Remote — Canada | Aug 2024 – Dec 2025
+   * Led the design and release of API v0.2.4, introducing cleaner service boundaries and architecture improvements that reduced debugging time by ~30% and improved build pipeline speed.
+
+   * Built scalable backend services supporting internationalization and multi-region usage, enabling smooth global expansion.
+
+   * Improved application performance and SEO by ~30% through backend caching strategies, asset optimization, and architectural refinements.
+
+   * Collaborated closely with product, design, and engineering teams to deliver features in a fast-paced startup environment while maintaining backend reliability and code quality.
+
+
+Backend Engineer — Airepro Solution Pvt Ltd
+Remote — India | Jul 2023 – Aug 2024
+      * Containerized backend services using Docker and deployed them across Kubernetes clusters, improving scalability and fault tolerance.
+
+      * Configured NGINX load balancing to handle peak traffic with minimal downtime.
+
+      * Built centralized logging and monitoring using Elasticsearch, Grafana, and Loki, reducing debugging cycles by ~40%.
+
+      * Automated backend workflows using cron jobs and background workers, significantly reducing manual operational overhead.
+
+
+Backend Developer — Outcess Solution Nigeria Ltd
+Nigeria | Feb 2022 – Nov 2022
+         * Developed and optimized RESTful APIs for a large CRM platform, improving data flow and system performance.
+
+         * Introduced Redis caching, reducing API latency by ~60% and improving response consistency.
+
+         * Resolved 90% of critical user-reported issues within 24 hours, improving system stability and customer satisfaction.
+
+         * Built backend integrations and automation workflows that streamlined internal business operations.
+
+
+
+
+PROJECTS
+TaskCollab — Real‑Time Collaboration Platform
+
+🔗 taskcollab-app.vercel.app
+
+Full-stack task management platform with real-time collaboration and AI-powered automation.
+            * Implemented real-time collaboration using WebSockets and Socket.IO.
+            * Built background processing pipelines using Redis + BullMQ for async task handling.
+            * Developed an AI-driven task extraction system that parses documents and auto-assigns tasks.
+            * Stack: Next.js, Node.js, TypeScript, Redis, BullMQ
+            * Deployed with scalability and performance optimization in mind.
+________________
+
+
+EDUCATION & CERTIFICATIONS
+B.Agric, Rivers State University — Nigeria (2023)
+Full‑Stack Web Development Program, Loctech Training Institute (2022)
+Data Structures & Algorithms Certification, LeetCode/Udemy (2024)
+________________
+
+
+Links
+LinkedIn: https://linkedin.com/in/ogedi-favour-uchibeke-553955152
+GitHub: https://github.com/Ogedi001
+Portfolio: https://ogedi-dev.vercel.app/
+TaskCollab: https://taskcollab-app.vercel.app/

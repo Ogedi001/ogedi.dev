@@ -1,0 +1,230 @@
+---
+title: "Designing Clean Service Boundaries"
+description: "Patterns and principles for building maintainable microservices with clear responsibilities and contracts"
+date: "2024-11-20"
+tags: ["Architecture", "Microservices", "API Design", "System Design"]
+readingTime: "6 min read"
+---
+
+# Designing Clean Service Boundaries
+
+One of the most challenging aspects of building scalable systems is defining clear service boundaries. Here's a practical guide to designing maintainable microservices.
+
+## The Problem with Poor Boundaries
+
+Services with unclear responsibilities lead to:
+
+- Tight coupling between teams
+- Distributed monoliths
+- Difficult debugging
+- Slow deployment cycles
+
+## Principles for Clean Boundaries
+
+### 1. Single Responsibility Principle
+
+Each service should do one thing well:
+
+```
+❌ BAD: UserService handles auth, profile, notifications, billing
+
+✅ GOOD:
+├── AuthService      (authentication, authorization)
+├── ProfileService   (user profiles, settings)
+├── NotificationService (emails, push, SMS)
+└── BillingService   (payments, invoices, subscriptions)
+```
+
+### 2. Bounded Contexts
+
+Define clear domain boundaries:
+
+```typescript
+// E-commerce bounded contexts
+const contexts = {
+  PRODUCT_CATALOG: {
+    services: ["ProductService", "InventoryService", "SearchService"],
+    data: ["Products", "Categories", "Reviews"],
+  },
+  ORDER_MANAGEMENT: {
+    services: ["CartService", "OrderService", "ShippingService"],
+    data: ["Orders", "Carts", "Shipments"],
+  },
+  PAYMENTS: {
+    services: ["PaymentService", "RefundService"],
+    data: ["Transactions", "PaymentMethods"],
+  },
+};
+```
+
+### 3. API-First Design
+
+Design contracts before implementation:
+
+```typescript
+// OpenAPI specification for OrderService
+paths:
+  /orders:
+    post:
+      summary: Create a new order
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - items
+                - customerId
+              properties:
+                items:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/OrderItem'
+                customerId:
+                  type: string
+      responses:
+        '201':
+          description: Order created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Order'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '429':
+          $ref: '#/components/responses/RateLimitExceeded'
+```
+
+## Communication Patterns
+
+### Synchronous (REST/gRPC)
+
+Use for operations requiring immediate consistency:
+
+```typescript
+// Order creation with inventory check
+async function createOrder(orderData: CreateOrderDTO): Promise<Order> {
+  // Synchronous call - need immediate inventory state
+  const inventory = await inventoryService.checkAvailability(orderData.items);
+
+  if (!inventory.allAvailable) {
+    throw new InsufficientInventoryError(inventory.unavailableItems);
+  }
+
+  return orderRepository.create(orderData);
+}
+```
+
+### Asynchronous (Events)
+
+Use for operations that can be eventually consistent:
+
+```typescript
+// Event-driven: Order confirmation
+async function createOrder(orderData: CreateOrderDTO): Promise<Order> {
+  const order = await orderRepository.create({
+    ...orderData,
+    status: "PENDING_CONFIRMATION",
+  });
+
+  // Publish event - other services react asynchronously
+  await eventBus.publish("order.created", {
+    orderId: order.id,
+    customerId: order.customerId,
+    items: order.items,
+    total: order.total,
+  });
+
+  return order;
+}
+```
+
+### Event Schema Design
+
+```typescript
+// Type-safe event schemas
+interface OrderCreatedEvent {
+  eventType: "ORDER_CREATED";
+  eventId: string;
+  timestamp: string;
+  payload: {
+    orderId: string;
+    customerId: string;
+    items: Array<{
+      productId: string;
+      quantity: number;
+      price: number;
+    }>;
+    total: number;
+    currency: string;
+  };
+  metadata: {
+    correlationId: string;
+    causationId?: string;
+  };
+}
+```
+
+## Data Management
+
+### Database per Service
+
+```
+┌──────────────┐     ┌──────────────┐     ┌──────────────┐
+│ AuthService  │     │ OrderService │     │ CatalogService│
+│   (PostgreSQL)     │   (PostgreSQL)     │  (PostgreSQL) │
+└──────────────┘     └──────────────┘     └──────────────┘
+```
+
+### Saga Pattern for Distributed Transactions
+
+```typescript
+// Order creation saga
+class OrderSaga {
+  async execute(orderData: CreateOrderDTO): Promise<Order> {
+    try {
+      // Step 1: Reserve inventory
+      await this.inventoryService.reserve(orderData.items);
+
+      // Step 2: Process payment
+      await this.paymentService.charge(orderData.customerId, orderData.total);
+
+      // Step 3: Create order
+      const order = await this.orderService.create(orderData);
+
+      // Step 4: Notify (async)
+      await this.eventBus.publish("order.created", { order });
+
+      return order;
+    } catch (error) {
+      // Compensating transactions
+      await this.compensate(error, orderData);
+      throw error;
+    }
+  }
+
+  private async compensate(error: Error, orderData: CreateOrderDTO) {
+    // Rollback in reverse order
+    if (error.step >= 3) {
+      await this.eventBus.publish("order.creation_failed", { orderData });
+    }
+    if (error.step >= 2) {
+      await this.paymentService.refund(orderData.customerId, orderData.total);
+    }
+    if (error.step >= 1) {
+      await this.inventoryService.release(orderData.items);
+    }
+  }
+}
+```
+
+## Key Takeaways
+
+1. **Start with domain boundaries** - Not technical layers
+2. **Design APIs first** - Contracts enable independent development
+3. **Embrace eventual consistency** - Async over sync where possible
+4. **Database per service** - Avoid shared databases
+5. **Think in events** - Decouple services through event-driven architecture
+6. **Plan for failure** - Implement sagas for distributed transactions
+
+Clean service boundaries are foundational to scalable systems. Invest time in thoughtful design upfront to avoid costly refactoring later.

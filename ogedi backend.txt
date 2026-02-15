@@ -1,0 +1,77 @@
+OGEDI FAVOUR UCHIBEKE
+Backend Developer  Remote (Nigeria)  | Azure · Node.js · AI Integration · Cloud-Native Systems .Open to Canada. Remote Roles
+📧 ogedifavour2@gmail.com · 🔗 LinkedIn · 💻 GitHub · 
+________________
+
+
+**SUMMARY
+Backend Developer with 5+ years of experience designing and deploying scalable, secure, and high-performance backend systems on Azure and other cloud platforms. Strong expertise in Node.js, PostgreSQL, CosmosDB, and AI integration using LangChain and LLM APIs. Proven ability to architect cloud-native solutions, optimize data pipelines, and enhance system reliability within CI/CD and DevOps environments.
+________________
+
+
+CORE TECHNICAL SKILLS
+Backend: Node.js, TypeScript, Rust, Express.js, Fastify, NestJS, REST, Microservices, WebSockets
+Databases: PostgreSQL, MongoDB, MySQL, Redis, Elasticsearch, Firebase
+Clouds: Azure App Services, Azure Functions, Azure Data Lake, Blob Storage, CosmosDB, AWS
+Monitoring: Prometheus, Grafana, Loki
+AI / LLMs: OpenAI API, GPT Models, Embeddings, LangChain-style patterns, Retrieval, AI task automation.
+Architecture: Distributed systems, queues & workers (BullMQ), caching, observability, rate limiting
+________________
+
+
+
+
+
+
+PROFESSIONAL EXPERIENCE
+
+Backend Engineer — Airepro Solution Pvt Ltd
+Remote — India | Jul 2023 – Aug 2024
+
+•   Containerized backend services using Docker and deployed them across Kubernetes clusters for improved reliability and scalability.
+•  Configured NGINX load balancing to ensure minimal downtime during peak‑traffic periods.
+•  Built centralized logging with Elasticsearch + Grafana + Loki, reducing debugging cycles by  40%.
+•  Automated key backend workflows with cron jobs, increasing operational efficiency and reducing manual overhead for the engineering team.
+Full-Stack Engineer — Chimoney (Techstars ’23)
+Remote — Canada | Aug 2024 – Jul 2025
+
+•  Led the development and release of API v0.2.4, implementing modern architecture patterns  that reduced debugging time by 30% and improved build pipeline speed
+•  Designed and implemented the company-wide internationalization framework for web and mobile platforms, enabling multilingual support for global expansion.
+•  Improved website performance and SEO by 30% through strategic caching, asset optimization, and architecture refinements.
+•  Collaborated cross‑functionally with engineering, product, and design teams to deliver features in a fast‑paced startup environment
+
+
+Backend Developer — Outcess Solution Nigeria Ltd
+Nigeria | Feb 2022 – Nov 2022
+•  Built and optimized new RESTful APIs for a large CRM system, improving data flow and platform performance.
+•  Resolved 90% of critical users‑reported issues within 24 hours, improving customer satisfaction and reducing support backlog.
+•   Implemented Redis caching, reducing API latency by 60% and boosting response performance.
+•   Developed automation workflows and cross‑system integrations that streamlined internal business operations.
+________________
+
+
+PROJECTS
+TaskCollab — Real‑Time Collaboration Platform
+
+🔗 taskcollab-app.vercel.app
+Full‑stack task management platform with AI‑powered automation. 
+
+•   Implemented real-time collaboration using WebSockets and Socket.IO.
+•   Built an AI task extraction system that parses documents and auto‑assigns tasks to users.
+•   Stack: Next.js, Node.js, TypeScript, Redis, BullMQ.
+•   Deployed on Vercel with scalable architecture and optimized user experience.
+________________
+
+
+EDUCATION & CERTIFICATIONS
+B.Agric, Rivers State University — Nigeria (2023)
+Full‑Stack Web Development Program, Loctech Training Institute (2022)
+Data Structures & Algorithms Certification, LeetCode/Udemy (2024)
+________________
+
+
+Links
+LinkedIn: https://linkedin.com/in/ogedi-favour-uchibeke-553955152
+GitHub: https://github.com/Ogedi001
+Portfolio: https://ogedi-dev.vercel.app/
+TaskCollab: https://taskcollab-app.vercel.app/
