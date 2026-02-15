@@ -6,6 +6,7 @@ import { useState, useEffect } from "react";
 import { Container } from "./container";
 import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
+import { siteConfig } from "@/configs/config";
 
 const links = [
   { href: "/systems", label: "Systems" },
@@ -73,7 +74,15 @@ export function Navbar() {
           {/* CTA Button */}
           <div className="hidden md:flex items-center gap-3">
             <a
-              href="https://linkedin.com/in/ogedi-favour-uchibeke-553955152"
+              href={siteConfig.links.github}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+            >
+              GitHub
+            </a>
+            <a
+              href={siteConfig.links.linkedin}
               target="_blank"
               rel="noopener noreferrer"
               className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
@@ -150,7 +159,15 @@ export function Navbar() {
                 ))}
                 <div className="flex flex-col gap-2 pt-2 mt-2 border-t">
                   <a
-                    href="https://linkedin.com/in/ogedi-favour-uchibeke-553955152"
+                    href={siteConfig.links.github}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="px-3 py-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+                  >
+                    GitHub
+                  </a>
+                  <a
+                    href={siteConfig.links.linkedin}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="px-3 py-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
