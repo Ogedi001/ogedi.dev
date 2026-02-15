@@ -1,13 +1,6 @@
-import Link from "next/link";
 import { getSystems } from "@/lib/mdx/utils";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
+import { Container } from "@/components/layout/container";
+import { SystemCard } from "@/components/systems/system-card";
 
 export const metadata = {
   title: "Systems | Ogedi Favour Uchibeke",
@@ -36,49 +29,10 @@ export default function SystemsPage() {
 
       {/* Systems Grid */}
       <section className="pb-16 md:pb-24">
-        <div className="container mx-auto px-4">
+        <Container>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {systems.map((system: any) => (
-              <Link key={system.slug} href={`/systems/${system.slug}`}>
-                <Card className="h-full hover:shadow-lg transition-shadow duration-300 cursor-pointer group">
-                  <CardHeader>
-                    <div className="flex items-start justify-between gap-4 mb-2">
-                      <CardTitle className="text-xl md:text-2xl group-hover:text-primary transition-colors">
-                        {system.title}
-                      </CardTitle>
-                    </div>
-                    <CardDescription className="text-base">
-                      {system.description}
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="flex flex-wrap gap-2 mb-4">
-                      {system.tags?.map((tag: string) => (
-                        <Badge key={tag} variant="secondary">
-                          {tag}
-                        </Badge>
-                      ))}
-                    </div>
-                    {system.metrics && (
-                      <div className="grid grid-cols-2 gap-4 pt-4 border-t">
-                        {system.metrics.map((metric: any, index: number) => (
-                          <div key={index}>
-                            <p className="text-2xl font-bold text-primary">
-                              {metric.value}
-                            </p>
-                            <p className="text-sm text-muted-foreground">
-                              {metric.label}
-                            </p>
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                    <p className="text-sm text-muted-foreground mt-4">
-                      {system.date}
-                    </p>
-                  </CardContent>
-                </Card>
-              </Link>
+              <SystemCard key={system.slug} system={system} />
             ))}
           </div>
 
@@ -89,7 +43,7 @@ export default function SystemsPage() {
               </p>
             </div>
           )}
-        </div>
+        </Container>
       </section>
     </div>
   );

@@ -1,13 +1,6 @@
-import Link from "next/link";
 import { getWriting } from "@/lib/mdx/utils";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
+import { Container } from "@/components/layout/container";
+import { WritingCard } from "@/components/writing/writing-card";
 
 export const metadata = {
   title: "Writing | Ogedi Favour Uchibeke",
@@ -35,34 +28,10 @@ export default function WritingPage() {
 
       {/* Writing Grid */}
       <section className="pb-16 md:pb-24">
-        <div className="container mx-auto px-4">
+        <Container>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {posts.map((post: any) => (
-              <Link key={post.slug} href={`/writing/${post.slug}`}>
-                <Card className="h-full hover:shadow-lg transition-shadow duration-300 cursor-pointer group">
-                  <CardHeader>
-                    <CardTitle className="text-xl group-hover:text-primary transition-colors">
-                      {post.title}
-                    </CardTitle>
-                    <CardDescription className="line-clamp-2">
-                      {post.description}
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="flex flex-wrap gap-2 mb-4">
-                      {post.tags?.map((tag: string) => (
-                        <Badge key={tag} variant="secondary">
-                          {tag}
-                        </Badge>
-                      ))}
-                    </div>
-                    <div className="flex items-center justify-between text-sm text-muted-foreground">
-                      <span>{post.date}</span>
-                      <span>{post.readingTime}</span>
-                    </div>
-                  </CardContent>
-                </Card>
-              </Link>
+              <WritingCard key={post.slug} post={post} />
             ))}
           </div>
 
@@ -73,7 +42,7 @@ export default function WritingPage() {
               </p>
             </div>
           )}
-        </div>
+        </Container>
       </section>
     </div>
   );
