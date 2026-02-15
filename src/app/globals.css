@@ -126,7 +126,7 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* Headings use Cal Sans */
+/* Headings use sora */
 h1,
 h2,
 h3,
@@ -140,7 +140,9 @@ h6 {
 
 /* Code uses JetBrains Mono */
 code,
-pre {
+pre,
+kbd,
+samp {
   font-family: var(--font-mono);
 }
 

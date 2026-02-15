@@ -1,8 +1,10 @@
 import type { Metadata } from "next";
-import { Inter, JetBrains_Mono, Cal_Sans } from "next/font/google";
+import { Inter, JetBrains_Mono, Sora } from "next/font/google";
 import "./globals.css";
 import { Navbar } from "@/components/layout/navbar";
 import { Footer } from "@/components/layout/footer";
+
+// Body font
 const inter = Inter({
   subsets: ["latin"],
   weight: ["400", "500", "600", "700"],
@@ -10,16 +12,18 @@ const inter = Inter({
   display: "swap",
 });
 
-const jetbrainsMono = JetBrains_Mono({
+// Heading font (Cal Sans replacement)
+const sora = Sora({
   subsets: ["latin"],
-  variable: "--font-mono",
+  weight: ["500", "600", "700"],
+  variable: "--font-heading",
   display: "swap",
 });
 
-const calSans = Cal_Sans({
+// Code font
+const jetbrainsMono = JetBrains_Mono({
   subsets: ["latin"],
-  weight: "400",
-  variable: "--font-heading",
+  variable: "--font-mono",
   display: "swap",
 });
 
@@ -83,7 +87,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${inter.variable} ${jetbrainsMono.variable} ${calSans.variable}`}
+      className={`${inter.variable} ${jetbrainsMono.variable} ${sora.variable}`}
     >
       <body className="antialiased font-body bg-background text-foreground min-h-screen flex flex-col">
         <Navbar />
