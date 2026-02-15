@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { getWritingBySlug, getWriting } from "@/lib/mdx/utils";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Container } from "@/components/layout/container";
 
 interface Props {
   params: Promise<{ slug: string }>;
@@ -43,7 +44,7 @@ export default async function WritingPostPage({ params }: Props) {
     <div className="min-h-screen bg-background">
       {/* Header */}
       <section className="py-12 md:py-16 border-b">
-        <div className="container mx-auto px-4">
+        <Container>
           <Link href="/writing">
             <Button variant="ghost" className="mb-6 -ml-3">
               ← Back to Writing
@@ -74,7 +75,7 @@ export default async function WritingPostPage({ params }: Props) {
               </>
             )}
           </div>
-        </div>
+        </Container>
       </section>
 
       {/* Content */}

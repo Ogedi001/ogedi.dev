@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { getSystemBySlug, getSystems } from "@/lib/mdx/utils";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Container } from "@/components/layout/container";
 
 interface Props {
   params: Promise<{ slug: string }>;
@@ -43,7 +44,7 @@ export default async function SystemPage({ params }: Props) {
     <div className="min-h-screen bg-background">
       {/* Header */}
       <section className="py-12 md:py-16 border-b">
-        <div className="container mx-auto px-4">
+        <Container>
           <Link href="/systems">
             <Button variant="ghost" className="mb-6 -ml-3">
               ← Back to Systems
@@ -66,7 +67,7 @@ export default async function SystemPage({ params }: Props) {
           </div>
 
           <p className="text-sm text-muted-foreground">{system.date}</p>
-        </div>
+        </Container>
       </section>
 
       {/* Metrics */}

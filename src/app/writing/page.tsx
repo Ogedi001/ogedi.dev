@@ -15,7 +15,7 @@ export default function WritingPage() {
     <div className="min-h-screen bg-background">
       {/* Header */}
       <section className="py-16 md:py-24">
-        <div className="container mx-auto px-4">
+        <Container>
           <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight mb-4">
             Writing
           </h1>
@@ -23,7 +23,7 @@ export default function WritingPage() {
             Technical blog posts about backend development, system architecture,
             and software engineering best practices.
           </p>
-        </div>
+        </Container>
       </section>
 
       {/* Writing Grid */}

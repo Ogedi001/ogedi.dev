@@ -15,7 +15,7 @@ export default function SystemsPage() {
     <div className="min-h-screen bg-background">
       {/* Header */}
       <section className="py-16 md:py-24">
-        <div className="container mx-auto px-4">
+        <Container>
           <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight mb-4">
             Systems
           </h1>
@@ -24,7 +24,7 @@ export default function SystemsPage() {
             technical solutions I've built throughout my career as a senior
             engineer.
           </p>
-        </div>
+        </Container>
       </section>
 
       {/* Systems Grid */}
