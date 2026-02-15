@@ -12,7 +12,17 @@ export const siteConfig = {
     linkedin: "https://linkedin.com/in/ogedi-favour-uchibeke-553955152",
     twitter: "https://x.com/Ogedi_01",
     github: "https://github.com/Ogedi001",
+    resume: "/ogedi-resume.pdf",
   },
+  socials: [
+    { name: "GitHub", href: "https://github.com/Ogedi001", icon: "github" },
+    {
+      name: "LinkedIn",
+      href: "https://linkedin.com/in/ogedi-favour-uchibeke-553955152",
+      icon: "linkedin",
+    },
+    { name: "X", href: "https://x.com/Ogedi_01", icon: "twitter" },
+  ],
   availability: {
     openToWork: true,
     location: "Remote (Nigeria)",
