@@ -82,76 +82,129 @@ export default async function WritingPostPage({ params }: Props) {
       <section className="py-12 md:py-16">
         <div className="container mx-auto px-4">
           <article className="prose prose-gray dark:prose-invert max-w-4xl mx-auto">
-            {post.content.split("\n").map((line: string, index: number) => {
-              if (line.startsWith("# ")) {
-                return (
-                  <h1 key={index} className="text-3xl font-bold mt-8 mb-4">
-                    {line.replace("# ", "")}
-                  </h1>
-                );
-              }
-              if (line.startsWith("## ")) {
-                return (
-                  <h2 key={index} className="text-2xl font-bold mt-8 mb-4">
-                    {line.replace("## ", "")}
-                  </h2>
-                );
-              }
-              if (line.startsWith("### ")) {
-                return (
-                  <h3 key={index} className="text-xl font-bold mt-6 mb-3">
-                    {line.replace("### ", "")}
-                  </h3>
-                );
-              }
-              if (line.startsWith("```")) {
-                return null;
-              }
-              if (line.trim() === "") {
-                return <br key={index} />;
-              }
-              if (line.startsWith("- ") || line.startsWith("* ")) {
-                return (
-                  <li key={index} className="ml-4">
-                    {line.replace(/^[*-] /, "")}
-                  </li>
-                );
-              }
-              if (/^\d+\.\s/.test(line)) {
-                return (
-                  <li key={index} className="ml-4 list-decimal">
-                    {line.replace(/^\d+\.\s/, "")}
-                  </li>
-                );
-              }
-              if (line.includes("`")) {
-                const parts = line.split("`");
-                return (
-                  <p key={index} className="my-4">
-                    {parts.map((part: string, i: number) =>
-                      i % 2 === 1 ? (
-                        <code
-                          key={i}
-                          className="bg-muted px-1.5 py-0.5 rounded text-sm font-mono"
-                        >
-                          {part}
-                        </code>
-                      ) : (
-                        part
-                      ),
-                    )}
-                  </p>
-                );
-              }
-              return (
-                <p key={index} className="my-4 text-muted-foreground">
-                  {line}
-                </p>
-              );
-            })}
+            {renderContent(post.content)}
           </article>
         </div>
       </section>
     </div>
   );
+}
+
+function renderContent(content: string) {
+  const elements: React.ReactNode[] = [];
+  const lines = content.split("\n");
+  let inCodeBlock = false;
+  let codeBlockContent: string[] = [];
+  let codeBlockKey = 0;
+
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+
+    // Code block start/end
+    if (line.startsWith("```")) {
+      if (!inCodeBlock) {
+        inCodeBlock = true;
+        codeBlockContent = [];
+        continue;
+      } else {
+        elements.push(
+          <pre key={`code-${codeBlockKey++}`} className="prose-pre">
+            <code className="font-mono text-sm">
+              {codeBlockContent.join("\n")}
+            </code>
+          </pre>,
+        );
+        inCodeBlock = false;
+        codeBlockContent = [];
+      }
+      continue;
+    }
+
+    if (inCodeBlock) {
+      codeBlockContent.push(line);
+      continue;
+    }
+
+    // Headers
+    if (line.startsWith("# ")) {
+      elements.push(
+        <h1 key={i} className="text-3xl font-bold mt-8 mb-4">
+          {line.replace("# ", "")}
+        </h1>,
+      );
+      continue;
+    }
+    if (line.startsWith("## ")) {
+      elements.push(
+        <h2 key={i} className="text-2xl font-bold mt-8 mb-4">
+          {line.replace("## ", "")}
+        </h2>,
+      );
+      continue;
+    }
+    if (line.startsWith("### ")) {
+      elements.push(
+        <h3 key={i} className="text-xl font-bold mt-6 mb-3">
+          {line.replace("### ", "")}
+        </h3>,
+      );
+      continue;
+    }
+
+    // Empty lines
+    if (line.trim() === "") {
+      elements.push(<br key={i} />);
+      continue;
+    }
+
+    // Lists
+    if (line.startsWith("- ") || line.startsWith("* ")) {
+      elements.push(
+        <li key={i} className="ml-4 text-muted-foreground">
+          {line.replace(/^[*-] /, "")}
+        </li>,
+      );
+      continue;
+    }
+    if (/^\d+\.\s/.test(line)) {
+      elements.push(
+        <li key={i} className="ml-4 list-decimal text-muted-foreground">
+          {line.replace(/^\d+\.\s/, "")}
+        </li>,
+      );
+      continue;
+    }
+
+    // Inline code
+    if (line.includes("`")) {
+      const parts = line.split("`");
+      elements.push(
+        <p key={i} className="my-4">
+          {parts.map((part: string, j: number) =>
+            j % 2 === 1 ? (
+              <code
+                key={j}
+                className="bg-muted px-1.5 py-0.5 rounded text-sm font-mono"
+              >
+                {part}
+              </code>
+            ) : (
+              <span key={j} className="text-muted-foreground">
+                {part}
+              </span>
+            ),
+          )}
+        </p>,
+      );
+      continue;
+    }
+
+    // Regular paragraph
+    elements.push(
+      <p key={i} className="my-4 text-muted-foreground">
+        {line}
+      </p>,
+    );
+  }
+  return elements;
 }
