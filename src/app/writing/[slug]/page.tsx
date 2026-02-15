@@ -18,7 +18,7 @@ export async function generateStaticParams() {
 export async function generateMetadata({ params }: Props) {
   const { slug } = await params;
   const post = getWritingBySlug(slug);
-  
+
   if (!post) {
     return {
       title: "Post Not Found",
@@ -49,14 +49,14 @@ export default async function WritingPostPage({ params }: Props) {
               ← Back to Writing
             </Button>
           </Link>
-          
+
           <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold tracking-tight mb-4">
             {post.title}
           </h1>
           <p className="text-lg md:text-xl text-muted-foreground max-w-3xl mb-6">
             {post.description}
           </p>
-          
+
           <div className="flex flex-wrap gap-2 mb-4">
             {post.tags?.map((tag: string) => (
               <Badge key={tag} variant="secondary">
@@ -64,7 +64,7 @@ export default async function WritingPostPage({ params }: Props) {
               </Badge>
             ))}
           </div>
-          
+
           <div className="flex items-center gap-4 text-sm text-muted-foreground">
             <span>{post.date}</span>
             {post.readingTime && (
@@ -74,6 +74,7 @@ export default async function WritingPostPage({ params }: Props) {
               </>
             )}
           </div>
+        </div>
       </section>
 
       {/* Content */}
@@ -136,7 +137,7 @@ export default async function WritingPostPage({ params }: Props) {
                         </code>
                       ) : (
                         part
-                      )
+                      ),
                     )}
                   </p>
                 );
