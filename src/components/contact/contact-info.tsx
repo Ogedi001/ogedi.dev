@@ -14,7 +14,7 @@ export function ContactInfo() {
 
       <div className="mt-8 space-y-6">
         <div className="flex items-start gap-4">
-          <div className="flex-shrink-0 w-10 h-10 rounded-lg bg-blue-600/10 flex items-center justify-center">
+          <div className="shrink-0 w-10 h-10 rounded-lg bg-blue-600/10 flex items-center justify-center">
             <Mail className="w-5 h-5 text-blue-600 dark:text-blue-400" />
           </div>
           <div>
@@ -29,7 +29,7 @@ export function ContactInfo() {
         </div>
 
         <div className="flex items-start gap-4">
-          <div className="flex-shrink-0 w-10 h-10 rounded-lg bg-blue-600/10 flex items-center justify-center">
+          <div className="shrink-0 w-10 h-10 rounded-lg bg-blue-600/10 flex items-center justify-center">
             <MapPin className="w-5 h-5 text-blue-600 dark:text-blue-400" />
           </div>
           <div>

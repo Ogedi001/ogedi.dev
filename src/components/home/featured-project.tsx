@@ -62,7 +62,7 @@ export function FeaturedProject() {
             </div>
           </div>
           <div className="relative">
-            <div className="aspect-video rounded-lg bg-gradient-to-br from-blue-600/20 to-indigo-600/20 border flex items-center justify-center">
+            <div className="aspect-video rounded-lg bg-linear-to-br from-blue-600/20 to-indigo-600/20 border flex items-center justify-center">
               <div className="text-center p-8">
                 <div className="text-6xl mb-4">⚡</div>
                 <p className="text-muted-foreground">Real-time collaboration</p>

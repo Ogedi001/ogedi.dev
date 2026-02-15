@@ -40,7 +40,7 @@ export function WhatIBring() {
             <div className="mt-6 space-y-4">
               {valueProps.map((prop, index) => (
                 <div key={index} className="flex gap-4">
-                  <div className="flex-shrink-0 w-12 h-12 rounded-lg bg-blue-600/10 flex items-center justify-center">
+                  <div className="shrink-0 w-12 h-12 rounded-lg bg-blue-600/10 flex items-center justify-center">
                     <span className="text-2xl">{prop.icon}</span>
                   </div>
                   <div>
