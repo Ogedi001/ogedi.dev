@@ -73,7 +73,7 @@ export default async function SystemPage({ params }: Props) {
       {/* Metrics */}
       {system.metrics && (
         <section className="py-8 border-b bg-muted/30">
-          <div className="container mx-auto px-4">
+          <Container>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
               {system.metrics.map((metric: any, index: number) => (
                 <div key={index} className="text-center">
@@ -87,7 +87,7 @@ export default async function SystemPage({ params }: Props) {
                 </div>
               ))}
             </div>
-          </div>
+          </Container>
         </section>
       )}
 

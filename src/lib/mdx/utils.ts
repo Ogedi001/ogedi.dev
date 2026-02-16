@@ -1,5 +1,6 @@
 import fs from "fs";
 import path from "path";
+import yaml from "js-yaml";
 import { SystemMeta, System } from "@/types/system";
 import { WritingMeta, Writing } from "@/types/writing";
 
@@ -32,22 +33,8 @@ export function extractFrontmatter(mdxContent: string) {
   const frontmatterBlock = match[1];
   const content = mdxContent.replace(frontmatterRegex, "").trim();
 
-  const frontmatter: Record<string, any> = {};
-  frontmatterBlock.split("\n").forEach((line) => {
-    const [key, ...value] = line.split(":");
-    if (key && value) {
-      const valueStr = value.join(":").trim();
-      // Handle array values
-      if (valueStr.startsWith("[") && valueStr.endsWith("]")) {
-        frontmatter[key.trim()] = valueStr
-          .slice(1, -1)
-          .split(",")
-          .map((item) => item.trim().replace(/^"|"$/g, ""));
-      } else {
-        frontmatter[key.trim()] = valueStr.replace(/^"|"$/g, "");
-      }
-    }
-  });
+  // Use js-yaml to properly parse the frontmatter including arrays and nested objects
+  const frontmatter = yaml.load(frontmatterBlock) as Record<string, any>;
 
   return { content, frontmatter };
 }

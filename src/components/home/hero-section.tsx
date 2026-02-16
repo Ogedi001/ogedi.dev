@@ -69,7 +69,7 @@ export function HeroSection() {
               <span className="font-semibold text-foreground">
                 {siteConfig.title}
               </span>{" "}
-              with 5+ years of experience designing and deploying distributed
+              with 4+ years of experience designing and deploying distributed
               systems that power millions of transactions.
             </p>
 
