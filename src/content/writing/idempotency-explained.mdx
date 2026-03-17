@@ -1,0 +1,79 @@
+---
+title: "Idempotency Explained"
+description: "A clear, conceptual guide to idempotency for API consumers and backend engineers"
+date: "2026-03-17"
+tags: ["API Design", "Reliability", "Backend", "Resilience"]
+readingTime: "5 min read"
+---
+
+# Idempotency Explained
+
+Idempotency means a client can send the same request more than once and get the same result, without causing duplicate side effects. It is the safety net for retries, flaky networks, and client timeouts.
+
+## The Core Idea
+
+If a request is idempotent, repeating it does not change the outcome after the first successful execution. This matters most for operations that create side effects: charging a card, creating a record, sending a message.
+
+## Why It Matters
+
+Retries happen in real systems. Clients time out. Networks drop. Load balancers retry. Without idempotency, those retries can double-charge users, create duplicate orders, or corrupt state.
+
+Idempotency provides:
+
+- Reliability for clients that retry
+- Safety for operations with side effects
+- Clear behavior under partial failures
+
+## How It Works Conceptually
+
+At a high level, an idempotent API accepts a caller-supplied key that uniquely identifies the intent of a request. The system then uses that key to ensure that repeats return the same result.
+
+The pattern usually looks like this:
+
+- Client sends a request with an idempotency key
+- Server checks if a completed response exists for that key
+- If yes, the server returns the stored response
+- If no, the server processes the request once, stores the response, and returns it
+
+## What the Key Represents
+
+The idempotency key represents a single logical operation. If the client wants to perform a different operation, it must use a different key. Reusing a key with a different payload should be rejected, because it breaks the contract.
+
+## Client Responsibilities
+
+Clients should:
+
+- Generate a unique key per logical operation
+- Reuse the same key when retrying that operation
+- Avoid reusing keys across different operations
+- Treat retries as normal behavior, not exceptional logic
+
+## Server Responsibilities
+
+Servers should:
+
+- Enforce that the same key with different input is rejected
+- Persist or cache the original response for a defined window
+- Prevent concurrent execution of the same key
+- Return the exact same response for a repeat
+
+## Time Windows and Storage
+
+Idempotency records are usually stored for a bounded time window. That window should be long enough to cover real retry behavior, but short enough to avoid unbounded storage growth.
+
+## Common Pitfalls
+
+- Accepting the same key for different payloads
+- Returning a fresh response instead of the original one
+- Not guarding concurrent requests for the same key
+- Storing only partial response data
+- Using keys that are not unique per operation
+
+## What It Is Not
+
+Idempotency is not "retry until success." It is a contract that makes retries safe. It does not replace validation, authorization, or transactional correctness.
+
+## A Quick Mental Model
+
+Think of idempotency as a promise:
+"Whatever happens, if you repeat this exact request with the same key, I will give you the same result and I won't do it twice."
