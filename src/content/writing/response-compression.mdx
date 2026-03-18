@@ -1,0 +1,87 @@
+---
+title: "Response Compression That Actually Helps"
+description: "A developer-focused guide to compression with practical examples and safe defaults"
+date: "2026-03-18"
+tags: ["Performance", "Backend", "API Design", "Reliability"]
+readingTime: "6 min read"
+---
+
+# Response Compression That Actually Helps
+
+Compression is an easy win when used intentionally. It reduces bandwidth, improves perceived performance, and makes APIs feel faster over real networks. The key is to compress the right content and avoid wasting CPU on the wrong responses.
+
+## The Core Idea
+
+Compression trades CPU for smaller responses. When the response is text-like and large enough, the trade is almost always worth it. When it is already compressed or latency-sensitive, it is usually a net loss.
+
+## Why It Matters In Practice
+
+Real users rarely sit on perfect networks. Compression lowers transfer time, especially on mobile and long-distance connections. It also reduces bandwidth costs and can smooth out traffic spikes during peak load.
+
+## Developer Guide: What to Compress
+
+Start with text-based content:
+- JSON and GraphQL responses
+- HTML, CSS, and JavaScript
+- XML and other structured text
+
+Avoid compressing:
+- Images, video, and archives
+- Streaming responses like SSE
+- Protocols that are already optimized for framing and latency
+
+## Practical Example: API Payloads
+
+```text
+Scenario: A mobile client requests a 300 KB JSON response on a 3G network.
+Impact: Without compression, response time is high and the UI feels sluggish.
+Fix: Enable compression for JSON responses above a small size threshold.
+```
+
+## Practical Example: Already-Compressed Assets
+
+```text
+Scenario: You compress JPEG images and ZIP files.
+Impact: CPU cost rises but payload size barely changes.
+Fix: Skip compression for media and archives.
+```
+
+## Developer Guide: Safe Defaults
+
+A practical baseline looks like this:
+- Enable compression for text-like content types
+- Skip responses below a minimum size threshold
+- Respect client `Accept-Encoding`
+- Keep the algorithm list small and predictable
+
+## Reference Snippet
+
+```rust
+let config = CompressionConfig::default()
+    .with_brotli()
+    .with_min_size(1024);
+
+let app = Router::new().layer(compression_layer(config));
+```
+
+```ts
+// Express example: enable gzip compression with a size threshold
+app.use(
+  compression({
+    threshold: 1024,
+    filter: (req, res) => /json|text|javascript/.test(res.getHeader("Content-Type") ?? ""),
+  })
+);
+```
+
+## Operational Checklist
+
+A world-class setup:
+- Uses sensible defaults that are safe across endpoints
+- Allows per-route overrides when needed
+- Monitors CPU and latency impact
+- Documents behavior for API consumers
+
+## A Quick Mental Model
+
+Think of compression as a filter. It helps when the response is bulky and repetitive, and it hurts when the response is already tight or time-sensitive.

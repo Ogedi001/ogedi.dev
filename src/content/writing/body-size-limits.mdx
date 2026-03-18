@@ -1,0 +1,137 @@
+---
+title: "Body Size Limits That Protect and Respect Users"
+description: "A content-rich, world-class guide to request body limits with real failure stories and practical defaults"
+date: "2026-03-18"
+tags: ["Security", "Backend", "API Design", "Reliability"]
+readingTime: "8 min read"
+---
+
+# Body Size Limits That Protect and Respect Users
+
+Body size limits are not just a security feature. They are a reliability contract between your service and every client that calls it. When the limit is clear and consistent, clients behave predictably and your system stays healthy under load.
+
+## The Core Idea
+
+A request body limit is a hard boundary on how much data your service will accept in a single request. It prevents memory pressure, protects downstream services, and stops a single oversized request from taking out a whole process.
+
+## Why It Matters In Production
+
+Without limits, you are exposed to real failure modes:
+
+- Memory exhaustion from a single oversized request
+- Slowloris-style uploads that keep connections open and tie up workers
+- DoS by flooding large payloads across multiple endpoints
+- Cascading failures as upstream services retry failed requests
+
+A good limit reduces the blast radius and makes these incidents easier to detect and recover from.
+
+## The Hidden Cost: Memory and Latency
+
+Large request bodies are expensive even when they are valid:
+
+- They increase per-request memory usage
+- They slow down parsing and validation
+- They increase GC pressure and tail latency
+
+A consistent limit makes this cost visible and predictable.
+
+## Developer Guide: How to Choose a Limit
+
+Start with a default, then refine per endpoint:
+
+- Pick a global default based on typical request sizes
+- Increase only where the product truly needs it
+- Keep upload endpoints separate from JSON APIs
+- Document any endpoint that differs from the default
+
+If you are unsure, be conservative and measure real traffic before raising limits.
+
+## Developer Guide: Where To Set Limits
+
+Limit at multiple layers for defense in depth:
+
+- Edge or gateway for early rejection
+- App middleware for consistent behavior
+- Handler-level overrides for special cases
+
+Each layer should enforce the same contract to avoid surprises.
+
+## Practical Example: Protecting a JSON API
+
+```text
+Scenario: A public endpoint accepts JSON payloads. A malicious client sends 50 MB bodies.
+Impact: Memory pressure rises, GC spikes, and latency explodes for all users.
+Fix: Enforce a 1 MB default limit on JSON routes.
+```
+
+## Practical Example: File Uploads Without Breaking Users
+
+```text
+Scenario: Users upload files. A 1 MB global limit breaks legitimate uploads.
+Fix: Keep uploads on a separate endpoint with a higher limit and isolated handling.
+```
+
+## Practical Example: Retry Storms
+
+```text
+Scenario: A large payload times out and retries across multiple clients.
+Impact: The same large body repeatedly hits the service, compounding load.
+Fix: Enforce size limits early and return a clear error so clients stop retrying.
+```
+
+## Make Failures Helpful
+
+When a request is too large, do not fail silently. Return a clear error that includes:
+
+- The limit
+- The request size if it is known
+- A recommended client action
+
+This turns a hard stop into a recoverable step for the user and the developer.
+
+## Reference Snippets
+
+```rust
+// rust example: Set a safe global default (1 MB)
+let app = Router::new()
+    .layer(body_limit_layer(BodySizeLimit::default()));
+```
+
+```rust
+// rust example: Override for uploads (100 MB)
+let uploads = Router::new()
+    .route("/upload", post(upload_handler))
+    .layer(body_limit_layer(limits::hundred_mb()));
+```
+
+```ts
+// Express example: 1 MB JSON limit by default
+app.use(express.json({ limit: "1mb" }));
+```
+
+```ts
+// Express example: higher limit for uploads
+const upload = multer({ limits: { fileSize: 100 * 1024 * 1024 } });
+app.post("/upload", upload.single("file"), uploadHandler);
+```
+
+## Observability and Operations
+
+A world-class setup includes:
+
+- Logs or metrics for size-limit hits
+- Dashboards that show rejection rates by endpoint
+- Alerts for sudden spikes in large-body rejections
+
+This makes abuse and mis-sized clients visible in minutes, not days.
+
+## Common Pitfalls
+
+- Setting a large global limit because one endpoint needs it
+- Failing with a generic 500 instead of a clear error
+- Allowing uploads and JSON requests to share the same limit
+- Raising limits without measuring real usage
+
+## A Quick Mental Model
+
+Think of body size limits as the door width to your service. The wider you make the door, the more you can accept, but the more you must be prepared to handle.
