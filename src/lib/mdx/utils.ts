@@ -7,6 +7,14 @@ import { WritingMeta, Writing } from "@/types/writing";
 const systemsDirectory = path.join(process.cwd(), "src/content/systems");
 const writingDirectory = path.join(process.cwd(), "src/content/writing");
 
+function sortByDateDesc<T extends { date?: string }>(items: T[]): T[] {
+  return [...items].sort((a, b) => {
+    const aTime = a.date ? Date.parse(a.date) : 0;
+    const bTime = b.date ? Date.parse(b.date) : 0;
+    return bTime - aTime;
+  });
+}
+
 export function getMDXFiles(directory: string) {
   if (!fs.existsSync(directory)) {
     return [];
@@ -41,7 +49,7 @@ export function extractFrontmatter(mdxContent: string) {
 
 export function getSystems(): SystemMeta[] {
   const files = getMDXFiles(systemsDirectory);
-  return files
+  const systems = files
     .map((file) => {
       const slug = file.replace(/\.mdx$/, "");
       const content = readMDXFile(systemsDirectory, slug);
@@ -56,6 +64,8 @@ export function getSystems(): SystemMeta[] {
       } as SystemMeta;
     })
     .filter((item): item is SystemMeta => item !== null);
+
+  return sortByDateDesc(systems);
 }
 
 export function getSystemBySlug(slug: string): System | null {
@@ -75,7 +85,7 @@ export function getSystemBySlug(slug: string): System | null {
 
 export function getWriting(): WritingMeta[] {
   const files = getMDXFiles(writingDirectory);
-  return files
+  const posts = files
     .map((file) => {
       const slug = file.replace(/\.mdx$/, "");
       const content = readMDXFile(writingDirectory, slug);
@@ -91,6 +101,8 @@ export function getWriting(): WritingMeta[] {
       } as WritingMeta;
     })
     .filter((item): item is WritingMeta => item !== null);
+
+  return sortByDateDesc(posts);
 }
 
 export function getWritingBySlug(slug: string): Writing | null {

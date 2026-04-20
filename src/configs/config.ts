@@ -3,10 +3,10 @@ export const siteConfig = {
   title: "Senior Full-Stack Engineer",
   shortTitle: "Ogedi",
   description:
-    "Senior Full-Stack Engineer specializing in scalable distributed systems, cloud-native architectures, AI/LLM integration, and high-performance APIs. 5+ years building systems that power millions of transactions.",
+    "Senior Full-Stack Engineer specializing in scalable distributed systems, cloud-native architectures, AI/LLM integration, and high-performance APIs. 4+ years building systems that power millions of transactions.",
   accentColor: "#2563eb", // Modern blue
   url: "https://ogedi-dev.vercel.app",
-  ogImage: "/og.jpg",
+  ogImage: "/ogedi.jpg",
   links: {
     email: "ogedifavour2@gmail.com",
     linkedin: "https://linkedin.com/in/ogedi-favour-uchibeke-553955152",
@@ -31,7 +31,7 @@ export const siteConfig = {
   },
   aboutMe: {
     intro:
-      "Senior Full-Stack Engineer with 5+ years of experience designing and deploying scalable, secure, and high-performance distributed systems. I bridge the gap between complex backend engineering and elegant user interfaces.",
+      "Senior Full-Stack Engineer with 4+ years of experience designing and deploying scalable, secure, and high-performance distributed systems. I bridge the gap between complex backend engineering and elegant user interfaces.",
     core: "I specialize in building cloud-native backend systems that handle millions of transactions, combined with modern frontend architectures. From designing API architectures at Techstars companies to integrating AI/LLM capabilities, I deliver engineering that drives business impact.",
     focus:
       "Currently focused on distributed systems, AI/LLM integration with LangChain and RAG patterns, and building engineering teams that ship reliable software.",

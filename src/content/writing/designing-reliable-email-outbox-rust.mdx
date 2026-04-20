@@ -1,0 +1,152 @@
+---
+title: "Designing a Reliable Email Outbox in Rust"
+description: "A practical problem-solution walkthrough for building durable email delivery with outbox records, retry policy, and provider abstraction"
+date: "2026-04-17"
+tags: ["Rust", "Architecture", "Reliability", "PostgreSQL", "Distributed Systems"]
+readingTime: "9 min read"
+---
+
+# Designing a Reliable Email Outbox in Rust
+
+Most teams start notification delivery with direct provider calls from request handlers. It is simple to ship, but fragile in real production conditions.
+
+This write-up shows a cleaner approach I implemented in TrustFlow: treat email as a durable workflow with explicit state and retry behavior.
+
+## Problem
+
+The initial risk profile was clear:
+
+- Provider latency could leak into user request latency.
+- Retries after timeouts could produce duplicate side effects.
+- Service restarts could leave send attempts in uncertain states.
+- Operators had no single timeline of what happened to each email.
+
+At low volume this is manageable. At sustained traffic and occasional provider failures, it becomes an incident pattern.
+
+## Constraints
+
+The design needed to satisfy four constraints:
+
+- No user-facing endpoint should depend on immediate provider success.
+- Retries must be policy-driven, not improvised in handlers.
+- Recovery must survive deploys and process restarts.
+- Support teams must be able to inspect exact delivery state.
+
+## Architecture Choice: Why Not BullMQ-Only
+
+BullMQ + Redis is strong for throughput, scheduling, and worker ergonomics.  
+The reason I did not use it as the only system-of-record is correctness and auditability.
+
+- Redis queue state is execution-focused, not business-canonical by default.
+- Email intent and delivery history are easier to audit when they live with the domain record in PostgreSQL.
+- Rebuild/replay workflows are simpler when durable truth is one place.
+
+Practical choice for this stage:
+
+- **Current**: PostgreSQL outbox is canonical; worker executes directly.
+- **Next**: Hybrid model where BullMQ can accelerate execution while outbox remains source of truth.
+
+## Solution
+
+The solution is an outbox architecture with clear boundaries:
+
+1. API path validates and enqueues email intent in PostgreSQL.
+2. Background worker claims due jobs and executes provider transport.
+3. Job state is updated to `sent`, `pending` (retry), or `failed`.
+4. Retries are scheduled with backoff and bounded attempt limits.
+
+This keeps request handling fast while making delivery behavior durable and inspectable.
+
+## Core Invariants
+
+These invariants drive design and review decisions:
+
+- A delivery intent is persisted before any provider call.
+- A claimed job has at most one active worker owner at a time.
+- Retryability is determined by typed error classification, not string matching.
+- A terminal attempt ends in explicit `failed` state with reason.
+- State transitions are persisted and queryable for every attempt.
+
+## Data Model
+
+Each outbox row tracks:
+
+- `status`: `pending`, `processing`, `sent`, `failed`
+- `attempts`, `max_attempts`
+- `scheduled_at`, `next_attempt_at`
+- `locked_at`, `locked_by`
+- `message_id`, `message_ids`
+- `last_error`
+
+This gives operations and engineering a complete lifecycle history per delivery.
+
+## Retry Strategy
+
+The system uses two retry layers:
+
+1. Provider-call retry in `EmailClient`
+   Handles brief transport/provider turbulence quickly.
+
+2. Outbox scheduling retry in `EmailWorker`
+   Reschedules failed jobs with `next_attempt_at` so recovery persists across restarts.
+
+This separation prevents both under-retrying and runaway retry loops.
+
+## Failure Classification
+
+Errors are typed so policy is deterministic:
+
+- Non-retryable:
+  validation errors, configuration errors
+- Retryable:
+  provider `5xx`, provider `429`, transport failures
+
+Typed classification prevents two common mistakes: dropping recoverable jobs and retrying invalid payloads forever.
+
+## Failure Walkthrough: Provider 429
+
+A single flow illustrates the full loop:
+
+1. Worker claims outbox row and calls provider.
+2. Provider returns `429` (retryable).
+3. Client-level retry applies short exponential backoff.
+4. If still unsuccessful, worker schedules `next_attempt_at` and increments attempts.
+5. Job re-enters `pending` and is retried later.
+6. If attempts are exhausted, job is marked `failed` with `last_error`.
+
+This avoids silent drops and avoids endless retries.
+
+## Claiming and Worker Safety
+
+Job claiming uses `FOR UPDATE SKIP LOCKED` with lock timeout checks. That means multiple worker instances can claim work safely without double ownership of the same row.
+
+Processing is also capped by an in-flight limit to protect downstream dependencies and keep throughput stable.
+
+![Email outbox worker process](/workerProcess.png "Worker execution path: poll, claim, process, retry scheduling, and terminal failure policy.")
+*Diagram note: the DLQ branch represents the next planned step. The current code path records terminal failures with `failed` status in the outbox.*
+
+## On-Call Signals That Matter
+
+To operate this in production, I track:
+
+- `outbox_claimed_count`
+- `outbox_sent_count`
+- `outbox_retry_scheduled_count`
+- `outbox_failed_terminal_count`
+- `outbox_oldest_pending_age_seconds`
+- provider response class (`2xx`, `4xx`, `5xx`, `429`)
+
+These metrics make incident triage fast: saturation, provider instability, and stuck jobs become immediately visible.
+
+## Implementation Outcome
+
+This architecture improved system behavior in practical ways:
+
+- Faster and more predictable request paths.
+- Durable retry and recovery behavior during incidents.
+- Clearer operational debugging from explicit job state transitions.
+- Cleaner code boundaries between domain logic and provider transport.
+
+## Final Takeaway
+
+A reliable email system is not just “send and retry.” It is a controlled workflow with durable state, explicit policy, and operational visibility. The provider is a component. The architecture is the product.

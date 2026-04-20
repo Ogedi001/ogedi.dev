@@ -1,0 +1,199 @@
+---
+title: "Reliable Email Delivery Architecture (Implemented in TrustFlow)"
+description: "An architecture-first case study on durable outbox workflows, retry classification, and provider abstraction for production email delivery"
+date: "2026-04-17"
+tags:
+  [
+    "Rust",
+    "Axum",
+    "PostgreSQL",
+    "Redis",
+    "Distributed Systems",
+    "Reliability",
+  ]
+metrics:
+  - label: "In-Flight Limit"
+    value: "25"
+    description: "Controlled worker throughput to protect dependencies"
+  - label: "Claim Batch"
+    value: "50"
+    description: "Jobs claimed per polling cycle"
+  - label: "Max Delivery Attempts"
+    value: "6"
+    description: "Outbox-level delivery attempts before terminal failure"
+  - label: "Retry Layers"
+    value: "2"
+    description: "Provider retries + outbox scheduling retries"
+---
+
+# Reliable Email Delivery Architecture (Implemented in TrustFlow)
+
+This system was designed as a reliability architecture first, and implemented in TrustFlow as the proving ground.
+
+The goal was straightforward: make email delivery predictable under failure, without coupling user requests to external provider behavior.
+
+## The Problem
+
+In most systems, notifications begin as direct provider calls in request handlers. That works until production traffic and failure conditions show up.
+
+The recurring issues are:
+
+- User requests inherit third-party latency and error spikes.
+- Retries happen without clear policy and create duplicated side effects.
+- Operators cannot tell whether a failed delivery is recoverable or terminal.
+
+TrustFlow needed a safer baseline that could survive deploys, transient provider incidents, and partial failures.
+
+## Design Principles
+
+The architecture follows five principles:
+
+- Persist delivery intent before any network call.
+- Keep transport execution asynchronous.
+- Classify failures into retryable vs terminal categories.
+- Maintain explicit delivery state transitions in storage.
+- Keep provider integration behind a stable interface.
+
+## Why This Design Over BullMQ-Only
+
+BullMQ is excellent for queue throughput and execution control.  
+For this system, the key requirement was durable business truth and auditability.
+
+- The outbox row is the canonical record of delivery intent and lifecycle.
+- Recovery logic remains correct across deploys and restarts without reconstructing intent from queue state.
+- Compliance/support queries stay straightforward because history is persisted in domain storage.
+
+Design stance:
+
+- **Today**: Outbox-first architecture with worker execution loop.
+- **Planned**: Hybrid path where BullMQ can accelerate dispatch while outbox remains canonical.
+
+## System Shape
+
+```text
+┌──────────────────────────── Gateway (Axum) ───────────────────────────┐
+│ Bootstraps shared config, app state, and graceful lifecycle handling. │
+│ Starts email worker only when notification delivery is enabled.       │
+└───────────────────────────────┬───────────────────────────────────────┘
+                                │
+                                ▼
+┌──────────────────────── Notification Context ─────────────────────────┐
+│ EmailService                                                          │
+│ - validates request contracts                                         │
+│ - applies sender/reply-to defaults                                    │
+│ - injects idempotency metadata                                        │
+│ - writes payload to durable outbox                                    │
+└───────────────────────────────┬───────────────────────────────────────┘
+                                │
+                                ▼
+┌────────────────────────── PostgreSQL Outbox ──────────────────────────┐
+│ status + attempts + schedule + lock metadata + provider message IDs   │
+│ claim policy uses FOR UPDATE SKIP LOCKED                              │
+└───────────────────────────────┬───────────────────────────────────────┘
+                                │
+                                ▼
+┌────────────────────────── Email Worker Loop ──────────────────────────┐
+│ claim_due -> process with in-flight cap -> sent/retry/fail transition │
+│ lock timeout recovery + exponential backoff scheduling                 │
+└───────────────────────────────┬───────────────────────────────────────┘
+                                │
+                                ▼
+┌──────────────────────── Brevo Provider Adapter ───────────────────────┐
+│ request validation, provider auth check, error typing, JSON contract  │
+└────────────────────────────────────────────────────────────────────────┘
+```
+
+## Implementation Decisions
+
+## Design Invariants
+
+These are the non-negotiable invariants used to evaluate correctness:
+
+- No provider send occurs before intent is persisted.
+- A job is owned by at most one worker at a time.
+- Retry decisions are derived from typed error classes.
+- Attempt progression is persisted, not held in memory.
+- Terminal failure is explicit and queryable.
+
+## 1) Durable Outbox Before Transport
+
+`EmailService::enqueue_request` validates and persists the request payload before transport. This enforces an asynchronous boundary and avoids coupling user-facing latency to third-party provider behavior.
+
+## 2) Two Retry Layers With Different Responsibilities
+
+The system has two retry scopes:
+
+- `EmailClient` retries retryable provider/transport failures immediately using exponential backoff.
+- `EmailWorker` reschedules jobs in outbox with `next_attempt_at` for delayed retries across polling cycles.
+
+This split handles short-lived turbulence quickly while still preserving recovery across restarts and deploy cycles.
+
+## 3) Explicit Failure Taxonomy
+
+`EmailError` models:
+
+- `Validation` and `Configuration` as non-retryable.
+- `Provider(5xx/429)` and `Transport` as retryable.
+- `Serialization` as retryable at transport boundary.
+
+This reduces ambiguous failure handling and produces deterministic delivery behavior.
+
+## 4) Safe Multi-Worker Claiming
+
+Outbox claims use `FOR UPDATE SKIP LOCKED`, status filters, and lock timeout windows. Combined with in-flight limits, this allows multiple workers to operate without duplicate ownership of the same job.
+
+![Email outbox worker process](/workerProcess.png "Email outbox worker flow in TrustFlow: claim, process, retry with backoff, and terminal failure handling.")
+*Diagram note: DLQ is shown as a planned evolution. Current implementation marks exhausted jobs as `failed` in the outbox table.*
+
+## Failure Scenario Walkthrough (429/5xx)
+
+1. Worker claims a due job.
+2. Provider call fails with `429` or `5xx`.
+3. Immediate client retry backoff is attempted for transient recovery.
+4. If still failing, outbox row is rescheduled via `next_attempt_at`.
+5. Attempts continue until success or terminal threshold.
+6. Exhausted jobs are marked `failed` with error context for triage.
+
+This closed-loop behavior is what keeps reliability deterministic under partial failure.
+
+## 5) Operationally Useful State Model
+
+Every job moves through explicit states (`pending`, `processing`, `sent`, `failed`) with attempt counters, lock metadata, timestamps, and provider message IDs. This is critical for support debugging and replay tooling.
+
+## Operational Signals
+
+The system is instrumented around operationally useful counters and age metrics:
+
+- `claim_count`
+- `sent_count`
+- `retry_scheduled_count`
+- `permanent_failures`
+- oldest pending job age
+- provider error class distribution
+
+These signals make saturation, provider incidents, and stuck pipelines visible before customer impact grows.
+
+## Outcome
+
+The architecture delivers:
+
+- Predictable request behavior at API boundaries.
+- Durable delivery recovery under partial failure.
+- Cleaner operator visibility during incidents.
+- Provider flexibility without domain rewrites.
+
+## Why This Matters in Senior Engineering Interviews
+
+This work shows architecture ownership, not just feature delivery:
+
+- Reliability is encoded in design boundaries.
+- Failure modes are explicit and testable.
+- Operational behavior is observable and auditable.
+- Domain logic remains insulated from provider-specific transport details.
+
+## Next Improvements
+
+- Add provider failover routing (primary/secondary provider strategy).
+- Add outbox DLQ partition for terminal failures above severity threshold.
+- Add metrics (`claim_count`, `retry_scheduled`, `permanent_failures`) and distributed traces for SLOs.
+- Add payload fingerprint checks to harden idempotency guarantees.
