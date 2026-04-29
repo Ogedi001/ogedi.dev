@@ -1,0 +1,43 @@
+<svg width="1600" height="900" viewBox="0 0 1600 900" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#050914"/>
+      <stop offset="100%" stop-color="#0b1220"/>
+    </linearGradient>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto">
+      <path d="M0,0 L10,5 L0,10 z" fill="#8aa1c0"/>
+    </marker>
+  </defs>
+
+  <rect width="1600" height="900" fill="url(#bg)"/>
+
+  <text x="56" y="64" fill="#ffffff" font-size="44" font-family="Inter, Arial" font-weight="700">Memory Anatomy: Stack, Heap, Allocator, RSS</text>
+  <text x="56" y="102" fill="#9fb0c8" font-size="24" font-family="Inter, Arial">Why high memory does not always mean a leak</text>
+
+  <rect x="70" y="170" rx="18" ry="18" width="430" height="220" fill="#0f1a2b" stroke="#2f7cff" stroke-width="3"/>
+  <text x="100" y="230" fill="#ffffff" font-size="32" font-family="Inter, Arial" font-weight="700">Stack</text>
+  <text x="100" y="280" fill="#c8d4e8" font-size="23" font-family="Inter, Arial">Function frames, locals, returns</text>
+  <text x="100" y="320" fill="#c8d4e8" font-size="23" font-family="Inter, Arial">Fast, scope-bound reclaim</text>
+
+  <rect x="560" y="170" rx="18" ry="18" width="430" height="220" fill="#0f1a2b" stroke="#24c97a" stroke-width="3"/>
+  <text x="590" y="230" fill="#ffffff" font-size="32" font-family="Inter, Arial" font-weight="700">Heap Objects</text>
+  <text x="590" y="280" fill="#c8d4e8" font-size="23" font-family="Inter, Arial">Dynamic allocations</text>
+  <text x="590" y="320" fill="#c8d4e8" font-size="23" font-family="Inter, Arial">Freed by GC / Drop / free()</text>
+
+  <rect x="1050" y="170" rx="18" ry="18" width="480" height="220" fill="#0f1a2b" stroke="#f5b53b" stroke-width="3"/>
+  <text x="1080" y="230" fill="#ffffff" font-size="32" font-family="Inter, Arial" font-weight="700">Allocator Arenas</text>
+  <text x="1080" y="280" fill="#c8d4e8" font-size="23" font-family="Inter, Arial">Pools, spans, free lists</text>
+  <text x="1080" y="320" fill="#c8d4e8" font-size="23" font-family="Inter, Arial">May retain pages for reuse</text>
+
+  <line x1="500" y1="280" x2="560" y2="280" stroke="#8aa1c0" stroke-width="4" marker-end="url(#arrow)"/>
+  <line x1="990" y1="280" x2="1050" y2="280" stroke="#8aa1c0" stroke-width="4" marker-end="url(#arrow)"/>
+
+  <rect x="220" y="500" rx="18" ry="18" width="1160" height="240" fill="#111a2a" stroke="#ef4f67" stroke-width="3"/>
+  <text x="260" y="566" fill="#ff7588" font-size="34" font-family="Inter, Arial" font-weight="700">Process RSS (OS / container visible memory)</text>
+  <text x="260" y="618" fill="#d2dceb" font-size="24" font-family="Inter, Arial">RSS includes active pages, allocator-retained pages, and mapped regions.</text>
+  <text x="260" y="656" fill="#d2dceb" font-size="24" font-family="Inter, Arial">So a high RSS alone is not enough to prove a leak.</text>
+
+  <line x1="775" y1="390" x2="775" y2="500" stroke="#8aa1c0" stroke-width="4" marker-end="url(#arrow)"/>
+
+  <text x="56" y="830" fill="#9fb0c8" font-size="23" font-family="Inter, Arial">Leak signal to trust: post-collection memory floor keeps rising over time.</text>
+</svg>
