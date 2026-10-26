@@ -124,17 +124,37 @@ export const siteConfig = {
   ],
   projects: [
     {
-      name: "TaskCollab",
-      tagline: "Real-Time Collaboration Platform",
+      name: "TrustFlow",
+      category: "Fintech Infrastructure",
+      status: "In Progress",
+      tagline: "Trust Infrastructure for Trade",
       description:
-        "Full-stack task management platform with real-time collaboration and AI-powered automation. Features WebSocket-based live updates, background processing with BullMQ, and AI document parsing.",
+        "Trust infrastructure for trade: an in-progress transaction orchestration platform for private orders, payment-protection workflows, delivery evidence, settlement coordination, and dispute handling.",
+      link: "https://trustflowhq.app/",
+      github: undefined,
+      caseStudy: "/systems/trustflow-trade-infrastructure",
+      highlights: [
+        "Rust and Axum backend designed as a modular monolith",
+        "Domain boundaries shaped by DDD for transaction-oriented workflows",
+        "Designed for transactional integrity, auditability, and long-term evolution",
+      ],
+      tech: ["Rust", "Axum", "Domain-Driven Design", "Modular Monolith"],
+    },
+    {
+      name: "TaskCollab",
+      category: "Collaboration Software",
+      status: "In Progress",
+      tagline: "In-Progress Collaboration Platform",
+      description:
+        "An in-progress task management platform exploring real-time collaboration, background processing with BullMQ, and future AI-assisted document workflows.",
       link: "https://taskcollab-app.vercel.app/",
       github: "https://github.com/Ogedi001/taskcollab",
+      caseStudy: undefined,
       highlights: [
-        "Real-time collaboration using WebSockets and Socket.IO",
-        "Background processing pipeline with Redis + BullMQ",
-        "AI-driven task extraction from documents",
-        "Role-based access control and analytics",
+        "Exploring real-time collaboration with WebSockets and Socket.IO",
+        "Background-processing architecture with Redis + BullMQ",
+        "Exploring AI-assisted task extraction from documents",
+        "Role-based access control and analytics in progress",
       ],
       tech: [
         "Next.js",

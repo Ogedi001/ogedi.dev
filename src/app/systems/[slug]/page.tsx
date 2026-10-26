@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Container } from "@/components/layout/container";
 import { renderContent } from "@/components/mdx/render-content";
+import { ExternalLink } from "lucide-react";
 
 interface Props {
   params: Promise<{ slug: string }>;
@@ -67,7 +68,20 @@ export default async function SystemPage({ params }: Props) {
             ))}
           </div>
 
-          <p className="text-sm text-muted-foreground">{system.date}</p>
+          <div className="flex flex-wrap items-center gap-4">
+            <p className="text-sm text-muted-foreground">{system.date}</p>
+            {system.link && (
+              <a
+                href={system.link}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center text-sm font-medium text-primary hover:underline"
+              >
+                {system.linkLabel || "View project"}
+                <ExternalLink className="ml-1.5 h-4 w-4" />
+              </a>
+            )}
+          </div>
         </Container>
       </section>
 

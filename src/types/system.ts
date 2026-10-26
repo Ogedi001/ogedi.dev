@@ -9,6 +9,8 @@ export interface System {
     value: string;
     description: string;
   }[];
+  link?: string;
+  linkLabel?: string;
   content: string;
 }
 
@@ -18,4 +20,6 @@ export interface SystemMeta {
   description: string;
   date: string;
   tags: string[];
+  link?: string;
+  linkLabel?: string;
 }

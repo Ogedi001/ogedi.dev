@@ -61,6 +61,8 @@ export function getSystems(): SystemMeta[] {
         description: frontmatter.description || "",
         date: frontmatter.date || "",
         tags: frontmatter.tags || [],
+        link: frontmatter.link || undefined,
+        linkLabel: frontmatter.linkLabel || undefined,
       } as SystemMeta;
     })
     .filter((item): item is SystemMeta => item !== null);
@@ -80,6 +82,8 @@ export function getSystemBySlug(slug: string): System | null {
     date: frontmatter.date || "",
     tags: frontmatter.tags || [],
     metrics: frontmatter.metrics || [],
+    link: frontmatter.link || undefined,
+    linkLabel: frontmatter.linkLabel || undefined,
   } as System;
 }
 

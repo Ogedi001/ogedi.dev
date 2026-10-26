@@ -1,0 +1,108 @@
+---
+title: "TrustFlow: Trust Infrastructure for Trade"
+description: "An in-progress Rust and Axum platform for coordinating private trade transactions through explicit lifecycle, evidence, and dispute boundaries."
+date: "2026-10-26"
+tags:
+  ["Rust", "Axum", "Domain-Driven Design", "Modular Monolith", "Fintech Infrastructure"]
+link: "https://trustflowhq.app/"
+linkLabel: "Visit TrustFlow"
+metrics:
+  - label: "Project Status"
+    value: "In Progress"
+    description: "Active product and architecture development"
+  - label: "Backend"
+    value: "Rust + Axum"
+    description: "Verified application backend direction"
+  - label: "Architecture"
+    value: "Modular"
+    description: "Explicit domain boundaries without premature service splitting"
+  - label: "Lifecycle Scope"
+    value: "Designed"
+    description: "Transaction responsibilities are being modelled explicitly"
+---
+
+# TrustFlow: Trust Infrastructure for Trade
+
+TrustFlow is an in-progress product for coordinating private trade transactions with greater clarity between buyers, sellers, and delivery partners. It is not a public marketplace: parties initiate a transaction directly, then use a shared workflow to represent agreed terms, delivery progress, supporting evidence, and the path to settlement.
+
+The product is designed for commerce that is often coordinated through messages, calls, screenshots, and manual arrangements—situations where the transaction itself lacks a dependable shared record.
+
+## The Problem
+
+In digitally coordinated trade, parties may not have an established trust relationship. Payment and delivery expectations can be ambiguous, information can be scattered across messaging tools, and a disagreement can leave both sides trying to reconstruct what was agreed.
+
+TrustFlow is being designed to make the transaction lifecycle explicit:
+
+Catalogue → Private order → Payment-protection workflow → Shipment → Evidence and confirmation → Settlement
+
+Trust and risk information, along with structured dispute handling, are intended to support this lifecycle where a transaction needs review. This is product direction, not a claim that every workflow is live or production-ready.
+
+## Product Boundaries
+
+The platform is intended to coordinate the conditions around a transaction rather than act as a conventional product-discovery marketplace. Its architectural model includes:
+
+- **Catalogue** for representing goods and their relevant characteristics.
+- **Private orders** for capturing the commercial terms between parties.
+- **Payment-protection coordination** for representing conditions around a payment and its settlement workflow.
+- **Shipment and evidence** for tracking fulfilment context and recording relevant confirmation.
+- **Disputes, trust, and risk** for organizing review responsibilities when parties disagree.
+
+Payment-protection and settlement are workflow boundaries under development. TrustFlow is not presented here as a bank, licensed financial institution, payment processor, or regulated escrow provider.
+
+## Backend Architecture
+
+TrustFlow’s backend is being built with **Rust** and **Axum** as a modular monolith. This choice establishes clear ownership boundaries without paying the operational cost of splitting an evolving product into independently deployed services too early.
+
+The design aims to keep API contracts, data ownership, transaction boundaries, and state changes understandable in one deployable application. A module is a logical boundary in this architecture—not a claim of a separate microservice.
+
+```text
+                    TrustFlow modular monolith
+
+  HTTP API (Axum)
+          │
+          ▼
+  ┌──────────────────────────────────────────────────────┐
+  │ Identity │ Catalogue │ Orders │ Shipment │ Evidence   │
+  │ Escrow   │ Disputes  │ Trust  │ Risk     │ Messaging  │
+  │ Notifications │ Analytics                           │
+  └──────────────────────────────────────────────────────┘
+          │
+          ▼
+  Transactional persistence and integration boundaries
+```
+
+PostgreSQL 17+ is the planned database baseline and Redis is part of the broader architectural direction. Their presence here should not be read as a claim that they are deployed or operational in every environment.
+
+## Domain-Driven Design
+
+The modular-monolith design uses Domain-Driven Design to separate business responsibilities while retaining a simpler operational model. The current domain model includes logical areas for identity, catalogue, orders, shipment, escrow, evidence, disputes, trust, risk, notifications, messaging, and analytics.
+
+This separation matters because a transaction has history. An order should preserve the commercial terms that both parties agreed at the time it was created. If a catalogue item changes later, that change should not silently rewrite the historical order snapshot. Similarly, shipment progress, evidence, and dispute decisions need their own ownership and traceable state changes.
+
+## Engineering Decisions and Trade-offs
+
+### Modular monolith before microservices
+
+The product has interconnected transaction rules and is still evolving. A modular monolith makes those boundaries explicit while avoiding distributed deployment, cross-service consistency, and operational complexity before they are justified.
+
+### Transactional integrity and idempotency
+
+Order and settlement-related requests can be retried by clients or external systems. The architecture treats idempotency as an important concern so a retried request can be handled deliberately rather than creating duplicate state transitions. The exact mechanisms remain subject to the ongoing implementation.
+
+### Auditability and evidence
+
+When a transaction is disputed, the question is not only what the current state is, but how it changed and what information supports that change. The domain model therefore treats evidence, state history, and clear responsibility boundaries as first-class design concerns.
+
+### Uncertain external outcomes
+
+Payment and delivery integrations can return an explicit failure, or leave an outcome uncertain because of timeouts and retries. The architecture is designed to distinguish those cases rather than treating an absence of confirmation as a definitive result. Provider-specific integrations and final operational behavior are still in development.
+
+## Current Status
+
+TrustFlow is under active development. The Rust/Axum backend direction, modular-monolith structure, and domain boundaries form the current architectural model. The public product site is live as an early product presence; it is marked “Coming soon.”
+
+The catalogue, private-order, payment-protection, shipment, evidence, settlement, dispute, trust, and risk areas describe the intended lifecycle and domain scope. They should not be interpreted as evidence that every capability, provider arrangement, or production workflow has been completed.
+
+## Project Link
+
+Visit the live product site from the link in the page header: `trustflowhq.app`.
