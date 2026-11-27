@@ -1,0 +1,123 @@
+---
+title: "Designing Catalogs for Diverse Products"
+description: "A design case study on governing product data, category structure, variants, and catalog navigation across diverse product types."
+date: "2026-11-27"
+tags:
+  [
+    "Product Catalogs",
+    "Domain Modeling",
+    "Data Architecture",
+    "Information Architecture",
+  ]
+---
+
+# Designing Catalogs for Diverse Products
+
+A catalog becomes difficult to model when the same browsing experience must describe products whose useful facts differ substantially. Apparel, furniture, and electronics do not share one natural set of fields. Yet shoppers still need consistent ways to understand, compare, and narrow what they see, while catalog managers need rules that make product data coherent.
+
+This design case study explores a general approach to that problem. The examples are illustrative, not claims about a deployed product or implementation.
+
+## The Problem
+
+A product model with a fixed set of columns is easy to understand at first. As the catalog expands, however, it accumulates fields that only make sense for one category, unused values, and category-specific exceptions in application code. A phone's storage capacity and an item's fabric composition become awkward neighbors in one shared record.
+
+At the other extreme, a bag of arbitrary key-value pairs accepts almost anything. It is flexible to write, but difficult to validate, query consistently, or present as reliable filters. "Colour," "color," and "finish" might describe related concepts without having equivalent meanings. A capacity could be entered as a number, a string, or a number whose unit is unclear.
+
+These are not only database concerns. If category boundaries are vague or attributes vary from one listing to another, managers cannot confidently maintain data and users cannot make meaningful comparisons. A category tree that is too broad offers little guidance; one that is too deep or inconsistently applied makes products hard to find.
+
+The goal is not to force every item into one shape. It is to define a small, governed structure for each product type while keeping that structure understandable and navigable.
+
+## Domain Model
+
+### Taxonomy and category inheritance
+
+Represent categories as a hierarchy with stable identities and explicit parent-child relationships. A broad category such as *Electronics* can contain *Computers*, which can contain *Laptops*. The parent gives context; the child narrows it. A product is assigned to an appropriate leaf or other explicitly permitted category rather than being classified only by a display label.
+
+Child categories can inherit applicable definitions and policies from their ancestors. For instance, an inherited attribute may apply to all electronics, while a laptop category adds a required screen size. Inheritance should be predictable: document whether a child can add rules, make an optional field required, or override an allowed value set. Avoid ambiguous precedence where several ancestors define competing rules.
+
+Keep stable category identifiers separate from names and paths shown to people. Names can change without changing identity. For exceptional restructures, a category may need an explicit replacement or redirect mapping rather than silently changing the meaning of its identifier.
+
+### Governed attribute definitions
+
+An attribute definition describes a fact that is meaningful for a category. It should carry enough information to validate and explain that fact, not merely a label and arbitrary value. Depending on the domain, a definition can specify:
+
+- A stable key and human-readable label.
+- A data type, such as text, integer, decimal, boolean, date, or a controlled choice.
+- Whether the value is required or optional, and the conditions under which it is required.
+- Validation bounds or formats, such as an allowed range or maximum text length.
+- A unit or measurement convention where the value is quantitative.
+- A controlled vocabulary when consistent choices matter for comparison or filtering.
+
+Units deserve particular care. A value of `13` is ambiguous without knowing whether it means inches, centimetres, or another measurement. A design can store normalized values with display units, or require an explicit unit and convert for comparison. The right choice depends on the attribute and the users' needs; the important point is to make the convention part of the definition rather than seller folklore.
+
+Controlled vocabularies also need stable codes behind their labels. A display name can be localized or clarified while the underlying choice remains identifiable. Free text remains useful for descriptive facts that do not benefit from a closed list, but should not substitute for governed choices when consistent filtering matters.
+
+### Descriptive facts and variant dimensions
+
+Descriptive attributes explain a product; variant dimensions distinguish purchasable or selectable versions of it. They may use similar data types, but they have different meaning.
+
+For example, material may describe an apparel item without changing which version a shopper selects. Size and colour can identify distinct offered variants. In electronics, a model identifier may describe a product family, while storage capacity could distinguish selectable configurations. Category policy can identify which attributes are eligible as variant dimensions, but it should not force every seller to offer every eligible dimension.
+
+Store variants as explicit combinations that are actually offered. If a seller offers two colours across some sizes, represent those combinations directly. Do not generate a Cartesian product and imply that unoffered combinations exist. This also keeps descriptive product facts separate from variant-specific values.
+
+### Evolving definitions without rewriting meaning
+
+Categories, labels, validation rules, and vocabularies change. An edit that appears cosmetic can alter meaning: changing a unit, narrowing a range, or reusing an old choice code may reinterpret existing product data.
+
+Treat governed definitions as versioned data. A product representation can record which definition revision was used to validate it, or preserve a resolved snapshot of the relevant definitions alongside its data. A new revision then governs new or explicitly updated records without silently changing old ones. Which information to snapshot depends on what must remain historically interpretable.
+
+When a definition changes, decide whether existing records remain valid under their original revision, need a reviewed migration, or should be flagged for correction. Keep that decision explicit and auditable. Never make a changed rule appear to have been true of old data unless that is an intentional, verified migration.
+
+## Catalog Navigation
+
+Navigation starts with a category landing page that explains what belongs there and provides a useful route into child categories. As a user narrows from a broad category to a specific one, breadcrumbs preserve context and let them move back up without losing their place.
+
+The selected category determines the relevant attribute definitions and, in turn, which facets make sense. A laptop category might expose memory or screen size; an apparel category might expose size system, size, and colour. Inherited rules contribute where applicable, while child-specific rules make the experience more precise. Do not present every possible catalog attribute on every page: irrelevant filters add noise and make the category model feel unreliable.
+
+Taxonomy and facets are related, but they are not interchangeable. The taxonomy organizes the catalog into stable, navigable subject areas. Facets narrow the current result set by values such as size, material, or price, and may combine across categories. A facet should not create a new category merely because it is a useful filter; a category should not be modeled as a facet when users need it as a durable destination with its own context.
+
+When a catalog offers both browsing and search, make the transition clear. Browsing follows the category hierarchy; search expresses a direct query that may cross category boundaries. Search results can still show category context and relevant facets, while category pages can provide a clear path to search when a user does not know where an item belongs. This is a navigation design consideration, not an assumption that a particular catalog includes a search service.
+
+Empty and retired categories need deliberate behavior. An empty category can explain that it has no current listings and offer parent, sibling, or search routes rather than ending the journey. A renamed category should retain its stable identity. When categories are merged or retired, preserve a mapping from old routes to a suitable destination where possible, and explain when a destination is broader or only approximate. Avoid redirects that silently send users to an unrelated category or imply that an old product is still available.
+
+## Architecture and Engineering Trade-offs
+
+Separate four responsibilities, even if they initially live in one application:
+
+1. **Taxonomy governance** owns category identity, hierarchy, lifecycle, and policy revisions.
+2. **Product data** owns product representations, descriptive values, and explicit variants.
+3. **Validation** resolves the applicable definitions for a category and checks product data against them.
+4. **Browse/navigation read models** shape category pages, breadcrumbs, and relevant facets for retrieval.
+
+This separation clarifies ownership without requiring separate services. A maintainable first design can keep these boundaries in modules and persistence schemas within one deployable system. A dedicated read model can be materialized or denormalized if browse queries need a different shape from the write model; the cost is keeping it consistent as governed data changes.
+
+There are several storage approaches, each with a different cost:
+
+- **Category-specific tables** give strong relational constraints and clear query paths, but multiplying schemas and code paths can make cross-category behavior and evolution expensive.
+- **A universal wide table** is straightforward initially, but sparse columns and category-specific exceptions accumulate as product shapes diverge.
+- **Flexible key-value or document attributes** accommodate change, but need a separate governance and validation layer to avoid inconsistent keys, types, units, and filtering semantics.
+- **A hybrid model** keeps stable identity and lifecycle fields relational, while storing governed attribute values in a typed or structured form tied to definition revisions. It balances flexibility with validation, but requires deliberate query and migration design.
+
+Category rules should be configurable, not mysterious. Prefer a small set of explicit rule types—requiredness, type, range, unit, allowed choices, and variant eligibility—over arbitrary expressions or category-specific executable code. A constrained model is easier to inspect, test, review, and explain. If a rule cannot be expressed clearly, first check whether the domain model or category boundary is wrong before adding a general-purpose rules engine.
+
+Treat definition changes like schema changes. A review should show affected descendants, existing values, requiredness changes, vocabulary updates, and any migration plan. Validate proposed definitions for incompatible overrides, missing units, invalid parent references, and duplicate or retired choice codes. Roll out changes in controlled steps: publish a new revision, validate or migrate affected records as appropriate, and update browse read models. Keep rollback and old-link behavior part of the change plan.
+
+The preferred balance is neither a separate application for every category nor unrestricted flexibility. Governed metadata and explicit versioning keep product data adaptable; clear ownership and a limited rule vocabulary keep it understandable. The right persistence and read-model choices depend on query patterns and scale, and should follow measured needs rather than be assumed in advance.
+
+## Illustrative Examples
+
+These examples show how the model can be applied; they are illustrative and do not describe verified project features.
+
+- **Apparel:** A category can require a sizing system before accepting size values. Size and colour may be variant dimensions, while fabric composition remains descriptive. A seller can offer a specific set of size-colour combinations without implying that every combination is available.
+- **Electronics:** A laptop category can inherit general electronics attributes and define model-specific specifications such as processor family or display characteristics. A device's storage options may be explicit variants if users select among them; otherwise, storage can remain a descriptive specification. A definition revision can clarify a unit or vocabulary without silently reinterpreting earlier representations.
+
+## Lessons for Engineers
+
+1. **Model the meaning before choosing the storage shape.** Distinguish product identity, category policy, descriptive facts, and offered variants.
+2. **Make category inheritance explicit.** Define how parent rules flow to children and which overrides are permitted.
+3. **Govern attributes at the source.** Types, requiredness, units, validation, and controlled choices make data understandable and comparable.
+4. **Represent only real combinations.** Explicit variants describe what is offered without inventing possibilities.
+5. **Version definitions as well as products.** Preserve the context that gave existing values their meaning.
+6. **Keep navigation concepts distinct.** Taxonomy provides durable structure; facets narrow a result set.
+7. **Design lifecycle behavior, not just the happy path.** Empty, renamed, merged, and retired categories need clear routes for people and old links.
+8. **Choose the least powerful rules model that works.** Constrained, reviewable configuration is easier to maintain than opaque flexibility.

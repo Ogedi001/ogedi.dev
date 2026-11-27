@@ -168,6 +168,28 @@ export const siteConfig = {
       ],
     },
   ],
+  clientWork: [
+    {
+      name: "Chimoney",
+      category: "Mobile app website",
+      relationship: "Built with the Chimoney team",
+      description:
+        "A marketing website for Chimoney’s mobile app, introducing its multi-currency wallet and global payment features.",
+      previewHeading: "Money, without borders.",
+      previewDetail: "Multi-currency wallets · Global payments",
+      link: "https://chimoney.app/",
+    },
+    {
+      name: "Onuada Tech",
+      category: "Company website",
+      relationship: "Freelance project",
+      description:
+        "A company website presenting Onuada Tech’s engineering and consulting services, founders, and selected work.",
+      previewHeading: "Engineering built around the business.",
+      previewDetail: "Software engineering · Product consulting",
+      link: "https://onuadatech.com/",
+    },
+  ],
   education: [
     {
       school: "Rivers State University",
